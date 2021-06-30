@@ -42,7 +42,7 @@ struct LinesView: View {
                             }
                         }
                         //draw
-                        if
+                        
                     }
                     .stroke(Color("primaryAccent"), lineWidth: 1.5)
                     .gesture(

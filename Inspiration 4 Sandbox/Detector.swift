@@ -7,13 +7,12 @@
 
 import Foundation
 import ExternalAccessory
+import Compression
 
 //Watches for EAAccessory connection notifications in the default notification center, passing to fns that check if
 //inserted or ejected object is the Timepix, beginning or stopping stream reading actions if it is.
 //Dumps of the binary read from the Timepix are stored in the application support directory in 1Mb chunks in
 //the file ~/stream.
-
-//TODO: estimate file size over the mission, and implement self.compress() if necessary.
 
 //I really wish this could be a monadic function. Apple hurts my soul with @objc and addObserver requiring object contexts...
 //We have an *object that exclusively manages global state*. I shouldn't have to stress how uncomfortable that is
@@ -32,7 +31,12 @@ class Detector {
     var isConnected: Bool = false
     var readoutTimer: Timer?
     var deinitLock = DispatchSemaphore(value: 0)
-
+    
+    //state consumed by views
+    var lastFrame: [[Double]] = []
+    var lastValue: Double = 0
+    var temperature: Double = 0
+    
     var ins = Detector()
     
     private init() {
@@ -41,7 +45,7 @@ class Detector {
                                                          in: .userDomainMask, appropriateFor: nil, create: true)
         self.dir = appSupportDir.appendingPathComponent("stream")
         
-
+        
         self.manager.registerForLocalNotifications()
         
         //register self as observer and enter connection and disconnection methods on recieving associated messages
@@ -73,6 +77,7 @@ class Detector {
             self.inStream = self.session!.inputStream!
             self.outStream = OutputStream(url: self.dir, append: true)
             
+            
             self.readoutTimer = Timer.scheduledTimer(timeInterval: 1.0, //should be roughly our minimum exposure setting
                                                      target: self,
                                                      selector: #selector(self.doReading),
@@ -81,7 +86,10 @@ class Detector {
         }
     }
     
-    @objc private func doReading() {
+    @objc private func doReading() { //this is implemented with some assumptions about how the InputStream
+                                     //gotten from an EAAccessory behaves. I assume:
+                                     //     that .hasBytesAvailable remains true over the lifetime of the connection
+                                     //     that .read returns zero if 
         if self.isConnected {
             DispatchQueue.global(qos: .utility).async {
                 let input = self.inStream!
@@ -91,11 +99,38 @@ class Detector {
                 output.schedule(in: .current, forMode: .default)
                 input.open()
                 output.open()
-            
-                if input.hasBytesAvailable {
+                
+                while input.hasBytesAvailable {
                     let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: 256_000)
+                    
                     input.read(buffer, maxLength: 256_000)
-                    output.write(buffer, maxLength: 256_000)
+                    
+                    let sourceData = Data(buffer: UnsafeMutableBufferPointer<UInt8>(start: buffer, count: 256_000))
+                    
+                    do { //write stream data to compressed file while building lastFrame
+                        let outputFilter = try OutputFilter(.compress, using: .lzfse) { (data: Data?) -> Void in
+                            if let data = data {
+                                try data.append(url: self.dir)
+                            }
+                        }
+                        
+                        var index = 0
+                        let bufferSize = sourceData.count
+                        let pageSize = 128
+                        while true {
+                            let rangeLength = min(pageSize, bufferSize - index)
+                            let subdata = sourceData.subdata(in: index ..< index + rangeLength)
+                            index += rangeLength
+                            
+                            try outputFilter.write(subdata)
+                            
+                            if rangeLength == 0 {
+                                break
+                            }
+                        }
+                    } catch {
+                        print("Compression error: line \(#line) in \(#file)")
+                    }
                 }
                 
                 self.deinitLock.signal()
@@ -128,9 +163,5 @@ class Detector {
                 }
             }
         }
-    }
-    
-    private func compress() { //possibly need?
-        return
     }
 }

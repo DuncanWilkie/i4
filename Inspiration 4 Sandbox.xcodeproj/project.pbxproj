@@ -26,7 +26,8 @@
 		0389605D265BEEBD008FC4AF /* GraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0389605C265BEEBD008FC4AF /* GraphView.swift */; };
 		03896060265BF084008FC4AF /* GaugeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0389605F265BF084008FC4AF /* GaugeView.swift */; };
 		03ABA650268452EC00D734A0 /* IndicatorLamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03ABA64F268452EC00D734A0 /* IndicatorLamp.swift */; };
-		03ABA652268D0FA800D734A0 /* StatisticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03ABA651268D0FA800D734A0 /* StatisticsView.swift */; };
+		03ABA652268D0FA800D734A0 /* StatisticArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03ABA651268D0FA800D734A0 /* StatisticArray.swift */; };
+		03ABA658268D82EA00D734A0 /* Statistic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03ABA657268D82EA00D734A0 /* Statistic.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -68,7 +69,8 @@
 		0389605C265BEEBD008FC4AF /* GraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphView.swift; sourceTree = "<group>"; };
 		0389605F265BF084008FC4AF /* GaugeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GaugeView.swift; sourceTree = "<group>"; };
 		03ABA64F268452EC00D734A0 /* IndicatorLamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndicatorLamp.swift; sourceTree = "<group>"; };
-		03ABA651268D0FA800D734A0 /* StatisticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticsView.swift; sourceTree = "<group>"; };
+		03ABA651268D0FA800D734A0 /* StatisticArray.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticArray.swift; sourceTree = "<group>"; };
+		03ABA657268D82EA00D734A0 /* Statistic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Statistic.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -171,7 +173,8 @@
 				03670B0926666C85006C7408 /* DoubleSlider.swift */,
 				03421F842673952B00178BDB /* LinesView.swift */,
 				03ABA64F268452EC00D734A0 /* IndicatorLamp.swift */,
-				03ABA651268D0FA800D734A0 /* StatisticsView.swift */,
+				03ABA651268D0FA800D734A0 /* StatisticArray.swift */,
+				03ABA657268D82EA00D734A0 /* Statistic.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -319,11 +322,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				03421F852673952B00178BDB /* LinesView.swift in Sources */,
-				03ABA652268D0FA800D734A0 /* StatisticsView.swift in Sources */,
+				03ABA652268D0FA800D734A0 /* StatisticArray.swift in Sources */,
 				03896060265BF084008FC4AF /* GaugeView.swift in Sources */,
 				0389605B264F1C39008FC4AF /* NoConnection.swift in Sources */,
 				03670B0A26666C85006C7408 /* DoubleSlider.swift in Sources */,
 				03ABA650268452EC00D734A0 /* IndicatorLamp.swift in Sources */,
+				03ABA658268D82EA00D734A0 /* Statistic.swift in Sources */,
 				03896032264F10F1008FC4AF /* ContentView.swift in Sources */,
 				03896030264F10F1008FC4AF /* Inspiration_4_SandboxApp.swift in Sources */,
 				03421F872679971F00178BDB /* Utilities.swift in Sources */,

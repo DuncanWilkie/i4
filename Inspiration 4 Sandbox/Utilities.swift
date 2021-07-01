@@ -46,6 +46,21 @@ func autoFormatter(_ toConvert: Date, _ startDate: Date, _ endDate: Date, _ date
     return dateFormatter.string(from: toConvert)
 }
 
+extension Data { //append data object to file; found on SO
+     func append(url: URL) throws {
+         if let fileHandle = FileHandle(forWritingAtPath: url.path) {
+             defer {
+                 fileHandle.closeFile()
+             }
+             fileHandle.seekToEndOfFile()
+             fileHandle.write(self)
+         }
+         else {
+             try write(to: url, options: .atomic)
+         }
+     }
+ }
+
 
 //Extracts data points to be graphed from the database and computes the necessary autoranging parameters.
 //Also very messily avoids rerunning the intensive initializer during ObservedObject updates via a

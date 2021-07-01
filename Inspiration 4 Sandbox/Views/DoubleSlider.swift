@@ -177,7 +177,6 @@ struct SliderHandleView: View {
             
             Text("\(autoFormatter(Date(timeIntervalSinceReferenceDate: handle.currentValue),Date(timeIntervalSinceReferenceDate: handle.sliderValueStart),Date(timeIntervalSinceReferenceDate: handle.sliderValueEnd),DateFormatter()))"
             )
-                .scaleEffect(1.5)
                 .foregroundColor(Color.gray)
                 .position(x: handle.currentLocation.x, y: handle.currentLocation.y - 40)
                 .opacity(handle.onDrag ? 1.0 : 0.0)

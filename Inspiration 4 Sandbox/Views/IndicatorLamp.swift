@@ -27,20 +27,17 @@ struct Hatching: View {
 
 struct IndicatorLamp: View {
     var label: String
-    @ObservedObject var device: DeviceWrapper
+    var state: Bool
     var body: some View {
-        
         ZStack {
             ZStack {
                 Circle()
-                    .foregroundColor(device.onoff ? Color.green : Color.red)
+                    .foregroundColor(state ? Color.green : Color.red)
                     .mask (
                         Hatching(density: 9, width: 30).clipShape(/*@START_MENU_TOKEN@*/Circle()/*@END_MENU_TOKEN@*/)
-                        
-                    ).shadow(color: device.onoff ? Color.green : Color.red, radius: 90)
+                    ).shadow(color: state ? Color.green : Color.red, radius: 90)
             }
             .scaleEffect(0.1)
-            
             
             Text("\(label)").position(x: 212, y:380).foregroundColor(.gray)
         }
@@ -50,6 +47,6 @@ struct IndicatorLamp: View {
 struct IndicatorLamp_Previews: PreviewProvider {
     
     static var previews: some View {
-        IndicatorLamp(label: "Power", device: DeviceWrapper(true)).preferredColorScheme(.dark)
+        IndicatorLamp(label: "Power", state: true).preferredColorScheme(.dark)
     }
 }

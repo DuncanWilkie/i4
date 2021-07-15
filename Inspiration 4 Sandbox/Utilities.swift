@@ -61,6 +61,21 @@ extension Data { //append data object to file; found on SO
      }
  }
 
+extension Data {
+    func chunked(into size: Int) -> [[Element]] {
+        return stride(from: 0, to:count, by: size).map {
+            Array(self[$0 ..< Swift.min($0 + size, count)])
+        }
+    }
+}
+
+extension Array {
+    func chunked(into size: Int) -> [[Element]] {
+        return stride(from: 0, to:count, by: size).map {
+            Array(self[$0 ..< Swift.min($0 + size, count)])
+        }
+    }
+}
 
 //Extracts data points to be graphed from the database and computes the necessary autoranging parameters.
 //Also very messily avoids rerunning the intensive initializer during ObservedObject updates via a

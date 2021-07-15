@@ -19,34 +19,32 @@ import Compression
 //from a functional programming perspective. Singletons are unequivocally an antipattern...
 
 
-class Detector {
+class Detector: NSObject, StreamDelegate, ObservableObject {
     var session: EASession?
     var manager = EAAccessoryManager.shared()
     var nc = NotificationCenter.default
-    var dir: URL
     
     var inStream: InputStream? = nil //optional because I can't initialize it in initializer--only on passing to onConnection
-    var outStream: OutputStream? = nil //ditto
+    var deinitLock = DispatchSemaphore(value: 1)
     
-    var isConnected: Bool = false
-    var readoutTimer: Timer?
-    var deinitLock = DispatchSemaphore(value: 0)
+    var lastMetadata: [Dictionary<String, AnyObject>] = []
+    var preparingFrame: [[Float]] = []
+    var badPackets: Int = 0
+    var frameCount: Int = 0
     
     //state consumed by views
-    var lastFrame: [[Double]] = []
-    var lastValue: Double = 0
-    var temperature: Double = 0
+    @Published var isConnected: Bool = false
+    @Published var lastFrame: [[Float]] = []
+    @Published var lastValue: Double = 0
+    @Published var temperature: Double = 0
+    @Published var
     
-    var ins = Detector()
+    static var ins = Detector()
     
-    private init() {
-        //generate file to store stream dumps
-        let appSupportDir = try! FileManager.default.url(for: .applicationSupportDirectory,
-                                                         in: .userDomainMask, appropriateFor: nil, create: true)
-        self.dir = appSupportDir.appendingPathComponent("stream")
-        
-        
+    private override init() {
         self.manager.registerForLocalNotifications()
+        
+        super.init() //NSObject init
         
         //register self as observer and enter connection and disconnection methods on recieving associated messages
         nc.addObserver(self, selector: #selector(onConnection), name: Notification.Name("EAAccessoryDidConnect"), object: nil)
@@ -59,7 +57,7 @@ class Detector {
             
             for i in accessories {
                 if i.name == "Timepix" {
-                    self.session = EASession(accessory: i, forProtocol: "space.chancellor.placeholder") //TODO: fix protocol
+                    self.session = EASession(accessory: i, forProtocol: "space.chancellor.test") //TODO: fix protocol
                     self.isConnected = true
                     break
                 }
@@ -74,66 +72,77 @@ class Detector {
                 return
             }
             
-            self.inStream = self.session!.inputStream!
-            self.outStream = OutputStream(url: self.dir, append: true)
+            self.inStream = self.session?.inputStream
+            let input = self.inStream!
             
-            
-            self.readoutTimer = Timer.scheduledTimer(timeInterval: 1.0, //should be roughly our minimum exposure setting
-                                                     target: self,
-                                                     selector: #selector(self.doReading),
-                                                     userInfo: nil,
-                                                     repeats: true)
+            input.delegate = self
+            input.schedule(in: .current, forMode: .default)
+            input.open()
         }
     }
     
-    @objc private func doReading() { //this is implemented with some assumptions about how the InputStream
-                                     //gotten from an EAAccessory behaves. I assume:
-                                     //     that .hasBytesAvailable remains true over the lifetime of the connection
-                                     //     that .read returns zero if 
+    func stream(_ aStream: Stream, handle eventCode: Stream.Event) {
+        self.deinitLock.wait() //make sure no other packets are handled
+        
+        switch eventCode {
+        case Stream.Event.hasBytesAvailable:
+            handlePacket(stream: aStream as! InputStream)
+        case Stream.Event.endEncountered:
+            break
+        case Stream.Event.errorOccurred:
+            print("Stream Error Occured: line \(#line) in \(#file)")
+        default:
+            print("Unrecognized stream event")
+        }
+        
+        self.deinitLock.signal() //we're safe to perform deinit of stream objs
+    }
+    
+    private func handlePacket(stream: InputStream) {
         if self.isConnected {
             DispatchQueue.global(qos: .utility).async {
-                let input = self.inStream!
-                let output = self.outStream!
-                
-                input.schedule(in: .current, forMode: .default)
-                output.schedule(in: .current, forMode: .default)
-                input.open()
-                output.open()
-                
-                while input.hasBytesAvailable {
-                    let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: 256_000)
+                while stream.hasBytesAvailable {
+                    let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: 65_536)
                     
-                    input.read(buffer, maxLength: 256_000)
+                    stream.read(buffer, maxLength: 65_536)
                     
-                    let sourceData = Data(buffer: UnsafeMutableBufferPointer<UInt8>(start: buffer, count: 256_000))
+                    var packet = Data(buffer: UnsafeMutableBufferPointer<UInt8>(start: buffer, count: 65_536))
+                    let header = packet.remove(at: 0)
                     
-                    do { //write stream data to compressed file while building lastFrame
-                        let outputFilter = try OutputFilter(.compress, using: .lzfse) { (data: Data?) -> Void in
-                            if let data = data {
-                                try data.append(url: self.dir)
+                    switch (header) {
+                    case  0x00:
+                        sleep(1)
+                        //handle metadata packet
+                        //should write out lastMetadata + lastFrame to iCloud archive,
+                        //then replace the first with new metadata and clear the second.
+                        let container = FileManager.default.url(forUbiquityContainerIdentifier: nil)!.appendingPathComponent("Documents")
+                        
+                        if !FileManager.default.fileExists(atPath: container.path, isDirectory: nil) {
+                            do {
+                                try FileManager.default.createDirectory(at: container, withIntermediateDirectories: true, attributes: nil)
+                            } catch {
+                                print(error.localizedDescription)
                             }
                         }
                         
-                        var index = 0
-                        let bufferSize = sourceData.count
-                        let pageSize = 128
-                        while true {
-                            let rangeLength = min(pageSize, bufferSize - index)
-                            let subdata = sourceData.subdata(in: index ..< index + rangeLength)
-                            index += rangeLength
-                            
-                            try outputFilter.write(subdata)
-                            
-                            if rangeLength == 0 {
-                                break
-                            }
+                        let dir = container.appendingPathComponent("dumps")
+                        do {
+                            try (self.lastMetadata as NSArray).write(to: dir.appendingPathComponent("metadata_\(self.frameCount)"))
+                            try (self.lastFrame as NSArray).write(to: dir.appendingPathComponent("frame_\(self.frameCount)"))
+                        } catch {
+                            print(error.localizedDescription)
                         }
-                    } catch {
-                        print("Compression error: line \(#line) in \(#file)")
+                        self.frameCount += 1
+                    case 0x01:
+                        //handle a frame byte
+                        //should test this to make sure .chunked extension of Data works
+                        self.preparingFrame += packet.chunked(into: 4).map { pixel in
+                            return Float(bitPattern: UInt32(littleEndian: Data(pixel).withUnsafeBytes { $0.pointee }))
+                        }.chunked(into: 256)
+                    default:
+                        self.badPackets += 1
                     }
                 }
-                
-                self.deinitLock.signal()
             }
         }
     }
@@ -148,17 +157,13 @@ class Detector {
                         self.deinitLock.wait()
                         
                         self.session = nil
-                        
+                    
                         self.inStream!.close()
-                        self.outStream!.close()
-                        
                         self.inStream = nil
-                        self.outStream = nil
-                        
+    
                         self.isConnected = false
-                        self.readoutTimer?.invalidate()
+    
                         break
-                        
                     }
                 }
             }

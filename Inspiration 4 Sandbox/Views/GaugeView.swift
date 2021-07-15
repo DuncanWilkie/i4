@@ -88,9 +88,6 @@ struct GaugeView: View {
                 RoundedRectangle(cornerRadius: 20).stroke(Color.gray, lineWidth: 8)
                     .frame(width: 150, height: 75)
                     .offset(x: 0.0, y: 100)
-                
-                        
-                        
             }
         }
     }

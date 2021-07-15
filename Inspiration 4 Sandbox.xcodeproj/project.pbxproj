@@ -16,6 +16,7 @@
 		03670B0526639F1E006C7408 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 03670B0426639F1E006C7408 /* GRDB */; };
 		03670B0A26666C85006C7408 /* DoubleSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03670B0926666C85006C7408 /* DoubleSlider.swift */; };
 		03670B0F26692180006C7408 /* SwiftUICharts in Frameworks */ = {isa = PBXBuildFile; productRef = 03670B0E26692180006C7408 /* SwiftUICharts */; };
+		036B3F5C269BFE390022729D /* FrameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 036B3F5B269BFE390022729D /* FrameView.swift */; };
 		03896030264F10F1008FC4AF /* Inspiration_4_SandboxApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0389602F264F10F1008FC4AF /* Inspiration_4_SandboxApp.swift */; };
 		03896032264F10F1008FC4AF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03896031264F10F1008FC4AF /* ContentView.swift */; };
 		03896034264F10F2008FC4AF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 03896033264F10F2008FC4AF /* Assets.xcassets */; };
@@ -53,6 +54,7 @@
 		03421F862679971F00178BDB /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		03421F88267A0E0F00178BDB /* Detector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Detector.swift; sourceTree = "<group>"; };
 		03670B0926666C85006C7408 /* DoubleSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoubleSlider.swift; sourceTree = "<group>"; };
+		036B3F5B269BFE390022729D /* FrameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameView.swift; sourceTree = "<group>"; };
 		0389602C264F10F1008FC4AF /* Inspiration 4 Sandbox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Inspiration 4 Sandbox.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		0389602F264F10F1008FC4AF /* Inspiration_4_SandboxApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Inspiration_4_SandboxApp.swift; sourceTree = "<group>"; };
 		03896031264F10F1008FC4AF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -175,6 +177,7 @@
 				03ABA64F268452EC00D734A0 /* IndicatorLamp.swift */,
 				03ABA651268D0FA800D734A0 /* StatisticArray.swift */,
 				03ABA657268D82EA00D734A0 /* Statistic.swift */,
+				036B3F5B269BFE390022729D /* FrameView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -333,6 +336,7 @@
 				03421F872679971F00178BDB /* Utilities.swift in Sources */,
 				0389605D265BEEBD008FC4AF /* GraphView.swift in Sources */,
 				03421F89267A0E0F00178BDB /* Detector.swift in Sources */,
+				036B3F5C269BFE390022729D /* FrameView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

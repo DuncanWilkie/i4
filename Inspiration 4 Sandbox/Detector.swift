@@ -19,13 +19,30 @@ import Compression
 //from a functional programming perspective. Singletons are unequivocally an antipattern...
 
 
+
+
 class Detector: NSObject, StreamDelegate, ObservableObject {
     var session: EASession?
     var manager = EAAccessoryManager.shared()
     var nc = NotificationCenter.default
-    
     var inStream: InputStream? = nil //optional because I can't initialize it in initializer--only on passing to onConnection
-    var deinitLock = DispatchSemaphore(value: 1)
+    
+    //quite proud of this nonstandard semaphore. We need to block deinitialization when any
+    //number of threads are running, but if we increment a semaphore for each thread
+    //and decrement it on completion, this does the opposite: blocks on 0 threads, passes on many.
+    //So, we listen for changes to a thread-counting variable (with some added syntax to let it be
+    //safely mutateable by multiple threads) and increment the actual Semaphore when the thread
+    //count will be set to zero, decrementing (locking) it otherwise. Is the multithread mutation safe?
+    var deinitLock: DispatchSemaphore = DispatchSemaphore(value: 1)
+    var threadCount: Int = 0 {
+        willSet(new) {
+            if new == 0 {
+                deinitLock.signal() //tells future calls to wait() that no threads are running
+            } else if new == 1 && threadCount == 0 {
+                deinitLock.wait() //tells future calls to wait() that threads are running
+            }
+        }
+    }
     
     var lastMetadata: [Dictionary<String, AnyObject>] = []
     var preparingFrame: [[Float]] = []
@@ -37,7 +54,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
     @Published var lastFrame: [[Float]] = []
     @Published var lastValue: Double = 0
     @Published var temperature: Double = 0
-    @Published var
+    
     
     static var ins = Detector()
     
@@ -82,7 +99,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
     }
     
     func stream(_ aStream: Stream, handle eventCode: Stream.Event) {
-        self.deinitLock.wait() //make sure no other packets are handled
+        threadCount += 1
         
         switch eventCode {
         case Stream.Event.hasBytesAvailable:
@@ -95,11 +112,11 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
             print("Unrecognized stream event")
         }
         
-        self.deinitLock.signal() //we're safe to perform deinit of stream objs
+        threadCount -= 1
     }
     
     private func handlePacket(stream: InputStream) {
-        if self.isConnected {
+        if isConnected {
             DispatchQueue.global(qos: .utility).async {
                 while stream.hasBytesAvailable {
                     let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: 65_536)
@@ -111,7 +128,6 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
                     
                     switch (header) {
                     case  0x00:
-                        sleep(1)
                         //handle metadata packet
                         //should write out lastMetadata + lastFrame to iCloud archive,
                         //then replace the first with new metadata and clear the second.
@@ -157,12 +173,12 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
                         self.deinitLock.wait()
                         
                         self.session = nil
-                    
+                        
                         self.inStream!.close()
                         self.inStream = nil
-    
+                        
                         self.isConnected = false
-    
+                        
                         break
                     }
                 }

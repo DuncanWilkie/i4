@@ -20,11 +20,6 @@ struct Inspiration_4_SandboxApp: App {
 
 //Raw data is stored in the SQLite database FRAME of these records, which are used to periodically update the MEAS table with equivalent dose
 
-struct Frame: Codable, FetchableRecord, PersistableRecord {
-    var date: Date
-    var exposure: Double
-    var image: [[Double]] //256x256 array of pixels with deposition values
-}
 
 struct Measurement: Codable, FetchableRecord, PersistableRecord { //used to write to DB in elegant way: try Measurment(...params...).insert(db)
     var date: Date
@@ -32,11 +27,6 @@ struct Measurement: Codable, FetchableRecord, PersistableRecord { //used to writ
     var deposition: Double
 }
 
-struct TestRecord: Codable, FetchableRecord, PersistableRecord {
-    var date: Date
-    var exposure: Double
-    var deposition: Double
-}
 
 class Scope: ObservableObject { //dumping ground for global state because Apple is EVIL and HATES PROGRAMMERS
     static var db = Scope()
@@ -78,9 +68,9 @@ class Scope: ObservableObject { //dumping ground for global state because Apple 
         
         self.queue = dbQueue
         
-        do { //remove in production
+        do {
             try dbQueue.write {  db in
-                try db.create(table: "TESTRECORD", ifNotExists: true) { t in
+                try db.create(table: "MEASUREMENT", ifNotExists: true) { t in
                     t.autoIncrementedPrimaryKey("ID")
                     t.column("DATE", .text).notNull()
                     t.column("EXPOSURE", .double).notNull()
@@ -90,67 +80,9 @@ class Scope: ObservableObject { //dumping ground for global state because Apple 
         } catch {
             print(error)
         }
-        
-        do {
-            try dbQueue.write {  db in
-                try db.create(table: "FRAME", ifNotExists: true) { t in
-                    t.autoIncrementedPrimaryKey("ID")
-                    t.column("DATE", .text).notNull()
-                    t.column("FRAME", .blob).notNull()
-                }
-            }
-        } catch {
-            print(error)
-        }
-        
-        //Reading in test data from CSV in project; remove in production
-        var testData: [TestRecord] = []
-        
-        let filepath = Bundle.main.path(forResource: "aggregated", ofType: "csv")!
-        var data = ""
-        do {
-            data = try String(contentsOfFile: filepath)
-        } catch {
-            print(error)
-        }
-        
-        var rows = data.components(separatedBy: "\r\n")
-        
-        rows.removeFirst()
-        
-        for row in rows {
-            let columns = row.components(separatedBy: ",")
-            if columns[0] != "" {
-                testData.append(TestRecord(date: Date(timeIntervalSince1970: Double(columns[1]) ?? 0.0),
-                                           exposure: Double(columns[2]) ?? 0.0,
-                                           deposition: Double(columns[3]) ?? 0.0))
-            }
-        }
-        
-        for row in testData {
-            do {
-                try dbQueue.write { db in
-                    try row.insert(db)
-                }
-            } catch {
-                print(error)
-            }
-        }
-        
-        var result: [Row] = []
-        do {
-            result = try dbQueue.read { db in
-               try Row.fetchAll(db, sql: "SELECT MIN(JULIANDAY(DATE)) AS MIN, MAX(JULIANDAY(DATE)) AS MAX FROM TESTRECORD")
-            }
-        } catch {
-            print(error)
-        }
-        let min = Date(julianDay: result[0]["MIN"])!
-        let max = Date(julianDay: result[0]["MAX"])!
-        self.testTimeBounds = (min, max)
     }
     
-    func write(_ row: Measurement) {
+    func write(_ row: Measurement) throws {
         var earliest: Date = timeBounds.0
         var latest: Date = timeBounds.1
         
@@ -162,20 +94,18 @@ class Scope: ObservableObject { //dumping ground for global state because Apple 
             
         }
         self.timeBounds = (earliest, latest)
-
         
-        try! queue.write {db in
-            try row.insert(db)
-        }
+        
+            try queue.write {db in
+                try row.insert(db)
+            }
+       
+            
+        
         
         
         self.timeBounds = (earliest, latest)
         
     }
     
-    func write(_ row: Frame) {
-        try! queue.write {db in
-            try row.insert(db)
-        }
-    }
 }

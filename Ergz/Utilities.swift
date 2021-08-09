@@ -8,48 +8,35 @@
 import Foundation
 import GRDB
 import Combine
-import PythonKit
 
 
 //wrapper for the Python function supplied by ADVACAM. We use PythonKit
 //mostly so we don't have to clutter up with LUTs, but also so
 //any lazy-evaluation typecasting behavior is consistent with provided code.
-/*func decodePixel(data: Data) -> (Int, Int, Double, Double, Double) {
-    let luts = Python.import("tpx3luts")
+func decodePixel(data: Data) -> (Int, Int, Int, Float, Int) {
     guard data.count == 6 else {
         print("\(data.count) bytes passed to processPixel; expected 6")
-        return (-1, -1, Double.infinity, Double.infinity, Double.infinity)
+        return (-1, -1, -1, Float.infinity, -1)
     }
     
-    let pydata = [UInt8](data)
-    let pyob = luts.convert_packet(pydata, false)
-    var r = (0, 0, 0.0, 0.0, 0.0)
+    let data = [UInt8](data)
+    let address: UInt16 = (UInt16(data[0]) & 0x0f) << 12 | (UInt16(data[1]) << 4) | ((UInt16(data[2]) << 4) & 0x0f)
+    var toa: UInt16 = ((UInt16(data[2]) & 0x0f) << 10) | (UInt16(data[3]) << 2) | ((UInt16(data[4]) >> 6) & 0x03)
+    var tot: UInt16 = ((UInt16(data[4]) & 0x3f) << 4) | ((UInt16(data[5]) >> 4) & 0x0f)
+    var ftoa = (data[5] & 0x0f)
+    let eoc = (address >> 9) & 0x7f
+    let sp = (address >> 9) & 0x3f
+    let pix = address & 0x07
+    let x = Int(eoc) * 2 + (Int(pix) / 4)
+    let y = Int(sp) * 4 + (Int(pix) % 4)
     
-    if let val = Int(pyob.0)  {
-        r.0 = val
-    }
+    toa = UInt16((toa >= 1 && toa < MAX_LUT_ITOT) ? LUT_ITOT[Int(toa)] : WRONG_LUT_ITOT)
+    ftoa = ftoa + UInt8(LUT_COLSHIFT4[x])
     
-    if let val = Int(pyob.1)  {
-        r.1 = val
-    }
-    
-    if let val = Double(pyob.2)  {
-        r.2 = val
-    }
-    
-    if let val = Double(pyob.3)  {
-        r.3 = val
-    }
-    
-    if let val = Double(pyob.4)  {
-        r.4 = val
-    }
-    
-    
-
-    return r
+    tot = UInt16((tot >= 1 && tot < MAX_LUT_TOT) ? LUT_TOT[Int(tot)] : WRONG_LUT_TOT)
+    return (x, y, Int(tot), Float(toa), Int(ftoa))
 }
-*/
+
 
 
 
@@ -162,7 +149,7 @@ class CollectionWindow {
             query += "END AS DATE_MID "
             
             query += """
-                FROM MEAS WHERE
+                FROM MEASURMENT WHERE
                     JULIANDAY(DATE) - JULIANDAY('\(toSQL(startDate))') >= 0
                     AND JULIANDAY('\(toSQL(endDate))') - JULIANDAY(DATE) >= 0
                     AND DATE_MID IS NOT NULL
@@ -240,18 +227,7 @@ class TestWindow {
             }
             
             print("starting test")
-            let test = UnsafeMutablePointer<UInt8>.allocate(capacity: 6)
-            test[0] = 0xcf
-            test[1] = 0x0b
-            test[2] = 0xef
-            test[3] = 0x36
-            test[4] = 0x43
-            test[5] = 0xf2
-            
-            
-            let data2 = Data(bytes: test, count: 6)
-           // print(decodePixel(data: data2))
-            
+
             //query preparation
             var query: String = "SELECT AVG(DEPOSITION / EXPOSURE) AS AVG,  CASE "
             for (date, range) in partitions {

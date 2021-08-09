@@ -17,7 +17,7 @@ struct GraphView: View {
         let endDate =
             Date(timeIntervalSinceReferenceDate: slider.highHandle.currentValue)
         
-        let window = TestWindow(startDate: startDate,
+        let window = CollectionWindow(startDate: startDate,
                                 endDate: endDate,
                                 density: 100,
                                 toUpdate: !slider.lowHandle.onDrag && !slider.highHandle.onDrag

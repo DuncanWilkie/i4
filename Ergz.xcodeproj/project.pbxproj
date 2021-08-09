@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		030C959B26B6BFC30057ACFB /* LUTs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030C959A26B6BFC30057ACFB /* LUTs.swift */; };
 		0337464E26B5E6E0001D4E77 /* tpx3luts.py in Sources */ = {isa = PBXBuildFile; fileRef = 0337464D26B5E6E0001D4E77 /* tpx3luts.py */; };
 		03421F832673597600178BDB /* aggregated.csv in Resources */ = {isa = PBXBuildFile; fileRef = 03421F822673597600178BDB /* aggregated.csv */; };
 		03421F852673952B00178BDB /* LinesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03421F842673952B00178BDB /* LinesView.swift */; };
@@ -48,6 +49,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		030C959A26B6BFC30057ACFB /* LUTs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LUTs.swift; sourceTree = "<group>"; };
 		0337464C26B59536001D4E77 /* Ergz.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Ergz.entitlements; sourceTree = "<group>"; };
 		0337464D26B5E6E0001D4E77 /* tpx3luts.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = tpx3luts.py; sourceTree = "<group>"; };
 		03421F822673597600178BDB /* aggregated.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = aggregated.csv; path = ../../../../Downloads/aggregated.csv; sourceTree = "<group>"; };
@@ -136,6 +138,7 @@
 				03896033264F10F2008FC4AF /* Assets.xcassets */,
 				03896038264F10F2008FC4AF /* Info.plist */,
 				03896035264F10F2008FC4AF /* Preview Content */,
+				030C959A26B6BFC30057ACFB /* LUTs.swift */,
 			);
 			path = Ergz;
 			sourceTree = "<group>";
@@ -276,7 +279,6 @@
 			mainGroup = 03896023264F10F1008FC4AF;
 			packageReferences = (
 				03670B0326639F1E006C7408 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
-				0337464926B58D96001D4E77 /* XCRemoteSwiftPackageReference "PythonKit" */,
 			);
 			productRefGroup = 0389602D264F10F1008FC4AF /* Products */;
 			projectDirPath = "";
@@ -334,6 +336,7 @@
 				0389605D265BEEBD008FC4AF /* GraphView.swift in Sources */,
 				03421F89267A0E0F00178BDB /* Detector.swift in Sources */,
 				036B3F5C269BFE390022729D /* FrameView.swift in Sources */,
+				030C959B26B6BFC30057ACFB /* LUTs.swift in Sources */,
 				037DAA1826B396E7004A7E7C /* SplashView.swift in Sources */,
 				0337464E26B5E6E0001D4E77 /* tpx3luts.py in Sources */,
 			);
@@ -669,14 +672,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		0337464926B58D96001D4E77 /* XCRemoteSwiftPackageReference "PythonKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/pvieito/PythonKit.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.0;
-			};
-		};
 		03670B0326639F1E006C7408 /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/groue/GRDB.swift.git";

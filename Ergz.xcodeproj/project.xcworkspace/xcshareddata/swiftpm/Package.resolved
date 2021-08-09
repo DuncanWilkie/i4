@@ -9,15 +9,6 @@
           "revision": "af13c91744ad8607c94ffbca3b0f98fa00692417",
           "version": "5.8.0"
         }
-      },
-      {
-        "package": "PythonKit",
-        "repositoryURL": "https://github.com/pvieito/PythonKit.git",
-        "state": {
-          "branch": null,
-          "revision": "074622c6893188bbb7926eee2f7eece8a5124c47",
-          "version": "0.1.0"
-        }
       }
     ]
   },

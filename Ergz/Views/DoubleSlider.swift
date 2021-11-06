@@ -108,7 +108,7 @@ class SliderHandle: ObservableObject {
 class DoubleSlider: ObservableObject {
     
     //Slider Size
-    final let width: CGFloat = 300
+    final let width: CGFloat = 450
     final let lineWidth: CGFloat = 8
     
     //Slider value range from valueStart to valueEnd

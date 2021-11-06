@@ -6,27 +6,27 @@
 //
 
 import SwiftUI
-var img = (1...65536).map({ _ -> UInt32 in
-    let alpha = Double.random(in: 0...1)
-    let r = alpha * 0.247
-    let g = alpha * 0.808
-    let b = alpha * 0.922
-    return (UInt32(r * 255) << 24) | (UInt32(g * 255) << 16) | (UInt32(b * 255) << 8) | UInt32(alpha * 255)
-    
-})
+
 
 struct FrameView: View {
     @ObservedObject var det = Detector.ins
     var body: some View {
-        VStack {
-            let max = det.lastFrame.max() ?? 1
+        VStack {var img = (1...65536).map({ _ -> UInt32 in
+            let alpha = (Int.random(in: 0...15) == 0) ? Double.random(in: 0...1) : 0.0
+            let r = alpha * 0.247
+            let g = alpha * 0.808
+            let b = alpha * 0.922
+            return (UInt32(r * 255) << 24) | (UInt32(g * 255) << 16) | (UInt32(b * 255) << 8) | UInt32(alpha * 255)
+            
+        })
+            /*let max = det.lastFrame.max() ?? 1
             var img = det.lastFrame.map { exp -> UInt32 in
                 let alpha = exp / (max != 0 ? max : 1)
                 let r = alpha * 0.247
                 let g = alpha * 0.808
                 let b = alpha * 0.922
                 return (UInt32(r * 255) << 24) | (UInt32(g * 255) << 16) | (UInt32(b * 255) << 8) | UInt32(alpha * 255)
-            }
+            }*/
             
             
             let cgImg = img.withUnsafeMutableBytes { (ptr) -> CGImage? in
@@ -43,7 +43,9 @@ struct FrameView: View {
                 return ctx.makeImage()
             }
             if let _ = cgImg {
-                Image(cgImg!, scale: 0.7, label: Text("Last Frame"))
+                let uiImg = UIImage(cgImage: cgImg!)
+                Image(uiImage: uiImg).resizable().scaledToFit()
+                
             }
         
         }

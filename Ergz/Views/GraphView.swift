@@ -17,12 +17,11 @@ struct GraphView: View {
         let endDate =
             Date(timeIntervalSinceReferenceDate: slider.highHandle.currentValue)
         
-        let window = CollectionWindow(startDate: startDate,
+        let window = TestWindow(startDate: startDate,
                                 endDate: endDate,
                                 density: 100,
                                 toUpdate: !slider.lowHandle.onDrag && !slider.highHandle.onDrag
                                 )
-        let _ = print(window.data)
         
         LinesView(window: window)
         

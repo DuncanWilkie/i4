@@ -12,14 +12,14 @@ struct StatisticArray: View {
         ZStack {
             VStack {
                 HStack(spacing: 0) {
-                    Statistic(value: 120.2, unit: "keV/s", label: "Test")
+                    Statistic(value: 120.2, unit: "keV/s", label: "Avg. Dep. Rate")
                 
-                    Statistic(value: 1.023, unit: "°C", label: "Temp")
+                    Statistic(value: 1.023 , unit: "MeV", label: "Tot. Deposition")
                 }
                 HStack(spacing: 0) {
-                    Statistic(value: 75.43, unit: "Gy", label: "Lorem impusm")
+                    Statistic(value: 20, unit: "Gy", label: "Est. Exposure")
                 
-                    Statistic(value: 0.023, unit: "µSv/hr", label: "Replace")
+                    Statistic(value: 0.23, unit: "Gy/hr", label: "Peak Exposure")
                 }
             }
         }

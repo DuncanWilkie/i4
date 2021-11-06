@@ -8,12 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		030C959B26B6BFC30057ACFB /* LUTs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030C959A26B6BFC30057ACFB /* LUTs.swift */; };
-		0337464E26B5E6E0001D4E77 /* tpx3luts.py in Sources */ = {isa = PBXBuildFile; fileRef = 0337464D26B5E6E0001D4E77 /* tpx3luts.py */; };
 		03421F832673597600178BDB /* aggregated.csv in Resources */ = {isa = PBXBuildFile; fileRef = 03421F822673597600178BDB /* aggregated.csv */; };
 		03421F852673952B00178BDB /* LinesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03421F842673952B00178BDB /* LinesView.swift */; };
 		03421F872679971F00178BDB /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03421F862679971F00178BDB /* Utilities.swift */; };
 		03421F89267A0E0F00178BDB /* Detector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03421F88267A0E0F00178BDB /* Detector.swift */; };
-		03670B0526639F1E006C7408 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 03670B0426639F1E006C7408 /* GRDB */; };
 		03670B0A26666C85006C7408 /* DoubleSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03670B0926666C85006C7408 /* DoubleSlider.swift */; };
 		036B3F5C269BFE390022729D /* FrameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 036B3F5B269BFE390022729D /* FrameView.swift */; };
 		037DAA1826B396E7004A7E7C /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 037DAA1726B396E7004A7E7C /* SplashView.swift */; };
@@ -21,37 +19,20 @@
 		03896032264F10F1008FC4AF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03896031264F10F1008FC4AF /* ContentView.swift */; };
 		03896034264F10F2008FC4AF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 03896033264F10F2008FC4AF /* Assets.xcassets */; };
 		03896037264F10F2008FC4AF /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 03896036264F10F2008FC4AF /* Preview Assets.xcassets */; };
-		03896042264F10F3008FC4AF /* Inspiration_4_SandboxTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03896041264F10F3008FC4AF /* Inspiration_4_SandboxTests.swift */; };
-		0389604D264F10F3008FC4AF /* Inspiration_4_SandboxUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0389604C264F10F3008FC4AF /* Inspiration_4_SandboxUITests.swift */; };
 		0389605B264F1C39008FC4AF /* NoConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0389605A264F1C39008FC4AF /* NoConnection.swift */; };
 		0389605D265BEEBD008FC4AF /* GraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0389605C265BEEBD008FC4AF /* GraphView.swift */; };
 		03896060265BF084008FC4AF /* GaugeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0389605F265BF084008FC4AF /* GaugeView.swift */; };
 		03ABA650268452EC00D734A0 /* IndicatorLamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03ABA64F268452EC00D734A0 /* IndicatorLamp.swift */; };
 		03ABA652268D0FA800D734A0 /* StatisticArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03ABA651268D0FA800D734A0 /* StatisticArray.swift */; };
 		03ABA658268D82EA00D734A0 /* Statistic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03ABA657268D82EA00D734A0 /* Statistic.swift */; };
+		03AE744D2733924E009366B7 /* test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03AE744C2733924E009366B7 /* test.swift */; };
+		03CD11692712A6DA00BF89B5 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 03CD11682712A6DA00BF89B5 /* GRDB */; };
+		03CD116B2712BE8200BF89B5 /* DialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03CD116A2712BE8200BF89B5 /* DialView.swift */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		0389603E264F10F3008FC4AF /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 03896024264F10F1008FC4AF /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 0389602B264F10F1008FC4AF;
-			remoteInfo = "Inspiration 4 Sandbox";
-		};
-		03896049264F10F3008FC4AF /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 03896024264F10F1008FC4AF /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 0389602B264F10F1008FC4AF;
-			remoteInfo = "Inspiration 4 Sandbox";
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		030C959A26B6BFC30057ACFB /* LUTs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LUTs.swift; sourceTree = "<group>"; };
 		0337464C26B59536001D4E77 /* Ergz.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Ergz.entitlements; sourceTree = "<group>"; };
-		0337464D26B5E6E0001D4E77 /* tpx3luts.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = tpx3luts.py; sourceTree = "<group>"; };
 		03421F822673597600178BDB /* aggregated.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = aggregated.csv; path = ../../../../Downloads/aggregated.csv; sourceTree = "<group>"; };
 		03421F842673952B00178BDB /* LinesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinesView.swift; sourceTree = "<group>"; };
 		03421F862679971F00178BDB /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
@@ -65,18 +46,14 @@
 		03896033264F10F2008FC4AF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		03896036264F10F2008FC4AF /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		03896038264F10F2008FC4AF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		0389603D264F10F3008FC4AF /* ErgzTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ErgzTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		03896041264F10F3008FC4AF /* Inspiration_4_SandboxTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Inspiration_4_SandboxTests.swift; sourceTree = "<group>"; };
-		03896043264F10F3008FC4AF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		03896048264F10F3008FC4AF /* ErgzUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ErgzUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		0389604C264F10F3008FC4AF /* Inspiration_4_SandboxUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Inspiration_4_SandboxUITests.swift; sourceTree = "<group>"; };
-		0389604E264F10F3008FC4AF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0389605A264F1C39008FC4AF /* NoConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoConnection.swift; sourceTree = "<group>"; };
 		0389605C265BEEBD008FC4AF /* GraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GraphView.swift; sourceTree = "<group>"; };
 		0389605F265BF084008FC4AF /* GaugeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GaugeView.swift; sourceTree = "<group>"; };
 		03ABA64F268452EC00D734A0 /* IndicatorLamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndicatorLamp.swift; sourceTree = "<group>"; };
 		03ABA651268D0FA800D734A0 /* StatisticArray.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticArray.swift; sourceTree = "<group>"; };
 		03ABA657268D82EA00D734A0 /* Statistic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Statistic.swift; sourceTree = "<group>"; };
+		03AE744C2733924E009366B7 /* test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = test.swift; sourceTree = "<group>"; };
+		03CD116A2712BE8200BF89B5 /* DialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DialView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,21 +61,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				03670B0526639F1E006C7408 /* GRDB in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		0389603A264F10F3008FC4AF /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		03896045264F10F3008FC4AF /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
+				03CD11692712A6DA00BF89B5 /* GRDB in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -109,8 +72,6 @@
 			isa = PBXGroup;
 			children = (
 				0389602E264F10F1008FC4AF /* Ergz */,
-				03896040264F10F3008FC4AF /* ErgzTests */,
-				0389604B264F10F3008FC4AF /* ErgzUITests */,
 				0389602D264F10F1008FC4AF /* Products */,
 			);
 			sourceTree = "<group>";
@@ -119,8 +80,6 @@
 			isa = PBXGroup;
 			children = (
 				0389602C264F10F1008FC4AF /* Ergz.app */,
-				0389603D264F10F3008FC4AF /* ErgzTests.xctest */,
-				03896048264F10F3008FC4AF /* ErgzUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -131,9 +90,9 @@
 				0337464C26B59536001D4E77 /* Ergz.entitlements */,
 				03421F822673597600178BDB /* aggregated.csv */,
 				0389602F264F10F1008FC4AF /* Inspiration_4_SandboxApp.swift */,
+				03AE744C2733924E009366B7 /* test.swift */,
 				03421F88267A0E0F00178BDB /* Detector.swift */,
 				03421F862679971F00178BDB /* Utilities.swift */,
-				0337464D26B5E6E0001D4E77 /* tpx3luts.py */,
 				0389605E265BEF82008FC4AF /* Views */,
 				03896033264F10F2008FC4AF /* Assets.xcassets */,
 				03896038264F10F2008FC4AF /* Info.plist */,
@@ -151,24 +110,6 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
-		03896040264F10F3008FC4AF /* ErgzTests */ = {
-			isa = PBXGroup;
-			children = (
-				03896041264F10F3008FC4AF /* Inspiration_4_SandboxTests.swift */,
-				03896043264F10F3008FC4AF /* Info.plist */,
-			);
-			path = ErgzTests;
-			sourceTree = "<group>";
-		};
-		0389604B264F10F3008FC4AF /* ErgzUITests */ = {
-			isa = PBXGroup;
-			children = (
-				0389604C264F10F3008FC4AF /* Inspiration_4_SandboxUITests.swift */,
-				0389604E264F10F3008FC4AF /* Info.plist */,
-			);
-			path = ErgzUITests;
-			sourceTree = "<group>";
-		};
 		0389605E265BEF82008FC4AF /* Views */ = {
 			isa = PBXGroup;
 			children = (
@@ -183,6 +124,7 @@
 				03ABA657268D82EA00D734A0 /* Statistic.swift */,
 				036B3F5B269BFE390022729D /* FrameView.swift */,
 				037DAA1726B396E7004A7E7C /* SplashView.swift */,
+				03CD116A2712BE8200BF89B5 /* DialView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -204,47 +146,11 @@
 			);
 			name = Ergz;
 			packageProductDependencies = (
-				03670B0426639F1E006C7408 /* GRDB */,
+				03CD11682712A6DA00BF89B5 /* GRDB */,
 			);
 			productName = "Inspiration 4 Sandbox";
 			productReference = 0389602C264F10F1008FC4AF /* Ergz.app */;
 			productType = "com.apple.product-type.application";
-		};
-		0389603C264F10F3008FC4AF /* ErgzTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 03896054264F10F3008FC4AF /* Build configuration list for PBXNativeTarget "ErgzTests" */;
-			buildPhases = (
-				03896039264F10F3008FC4AF /* Sources */,
-				0389603A264F10F3008FC4AF /* Frameworks */,
-				0389603B264F10F3008FC4AF /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				0389603F264F10F3008FC4AF /* PBXTargetDependency */,
-			);
-			name = ErgzTests;
-			productName = "Inspiration 4 SandboxTests";
-			productReference = 0389603D264F10F3008FC4AF /* ErgzTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		03896047264F10F3008FC4AF /* ErgzUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 03896057264F10F3008FC4AF /* Build configuration list for PBXNativeTarget "ErgzUITests" */;
-			buildPhases = (
-				03896044264F10F3008FC4AF /* Sources */,
-				03896045264F10F3008FC4AF /* Frameworks */,
-				03896046264F10F3008FC4AF /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				0389604A264F10F3008FC4AF /* PBXTargetDependency */,
-			);
-			name = ErgzUITests;
-			productName = "Inspiration 4 SandboxUITests";
-			productReference = 03896048264F10F3008FC4AF /* ErgzUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
@@ -257,14 +163,7 @@
 				TargetAttributes = {
 					0389602B264F10F1008FC4AF = {
 						CreatedOnToolsVersion = 12.5;
-					};
-					0389603C264F10F3008FC4AF = {
-						CreatedOnToolsVersion = 12.5;
-						TestTargetID = 0389602B264F10F1008FC4AF;
-					};
-					03896047264F10F3008FC4AF = {
-						CreatedOnToolsVersion = 12.5;
-						TestTargetID = 0389602B264F10F1008FC4AF;
+						LastSwiftMigration = 1300;
 					};
 				};
 			};
@@ -278,15 +177,13 @@
 			);
 			mainGroup = 03896023264F10F1008FC4AF;
 			packageReferences = (
-				03670B0326639F1E006C7408 /* XCRemoteSwiftPackageReference "GRDB.swift" */,
+				03CD11672712A6DA00BF89B5 /* XCRemoteSwiftPackageReference "GRDB" */,
 			);
 			productRefGroup = 0389602D264F10F1008FC4AF /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				0389602B264F10F1008FC4AF /* Ergz */,
-				0389603C264F10F3008FC4AF /* ErgzTests */,
-				03896047264F10F3008FC4AF /* ErgzUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -302,20 +199,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		0389603B264F10F3008FC4AF /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		03896046264F10F3008FC4AF /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -324,6 +207,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				03421F852673952B00178BDB /* LinesView.swift in Sources */,
+				03AE744D2733924E009366B7 /* test.swift in Sources */,
 				03ABA652268D0FA800D734A0 /* StatisticArray.swift in Sources */,
 				03896060265BF084008FC4AF /* GaugeView.swift in Sources */,
 				0389605B264F1C39008FC4AF /* NoConnection.swift in Sources */,
@@ -337,41 +221,12 @@
 				03421F89267A0E0F00178BDB /* Detector.swift in Sources */,
 				036B3F5C269BFE390022729D /* FrameView.swift in Sources */,
 				030C959B26B6BFC30057ACFB /* LUTs.swift in Sources */,
+				03CD116B2712BE8200BF89B5 /* DialView.swift in Sources */,
 				037DAA1826B396E7004A7E7C /* SplashView.swift in Sources */,
-				0337464E26B5E6E0001D4E77 /* tpx3luts.py in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		03896039264F10F3008FC4AF /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				03896042264F10F3008FC4AF /* Inspiration_4_SandboxTests.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		03896044264F10F3008FC4AF /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				0389604D264F10F3008FC4AF /* Inspiration_4_SandboxUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		0389603F264F10F3008FC4AF /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 0389602B264F10F1008FC4AF /* Ergz */;
-			targetProxy = 0389603E264F10F3008FC4AF /* PBXContainerItemProxy */;
-		};
-		0389604A264F10F3008FC4AF /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 0389602B264F10F1008FC4AF /* Ergz */;
-			targetProxy = 03896049264F10F3008FC4AF /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		0389604F264F10F3008FC4AF /* Debug */ = {
@@ -433,6 +288,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_PRECOMPILE_BRIDGING_HEADER = YES;
 			};
 			name = Debug;
 		};
@@ -488,6 +344,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_PRECOMPILE_BRIDGING_HEADER = YES;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -497,6 +354,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Ergz/Ergz.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -505,7 +363,7 @@
 				DEVELOPMENT_TEAM = L4ZJSHSGN8;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Ergz/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -514,6 +372,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = space.chancellor.ergz;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -524,6 +384,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Ergz/Ergz.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
@@ -532,7 +393,7 @@
 				DEVELOPMENT_TEAM = L4ZJSHSGN8;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Ergz/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -541,92 +402,9 @@
 				PRODUCT_BUNDLE_IDENTIFIER = space.chancellor.ergz;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		03896055264F10F3008FC4AF /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = FZ2GBZ6HA3;
-				INFOPLIST_FILE = "Inspiration 4 SandboxTests/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.example.Inspiration-4-SandboxTests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Ergz.app/Ergz";
-			};
-			name = Debug;
-		};
-		03896056264F10F3008FC4AF /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = FZ2GBZ6HA3;
-				INFOPLIST_FILE = "Inspiration 4 SandboxTests/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.example.Inspiration-4-SandboxTests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Ergz.app/Ergz";
-			};
-			name = Release;
-		};
-		03896058264F10F3008FC4AF /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = FZ2GBZ6HA3;
-				INFOPLIST_FILE = "Inspiration 4 SandboxUITests/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.example.Inspiration-4-SandboxUITests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = "Inspiration 4 Sandbox";
-			};
-			name = Debug;
-		};
-		03896059264F10F3008FC4AF /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = FZ2GBZ6HA3;
-				INFOPLIST_FILE = "Inspiration 4 SandboxUITests/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.example.Inspiration-4-SandboxUITests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = "Inspiration 4 Sandbox";
 			};
 			name = Release;
 		};
@@ -651,41 +429,23 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		03896054264F10F3008FC4AF /* Build configuration list for PBXNativeTarget "ErgzTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				03896055264F10F3008FC4AF /* Debug */,
-				03896056264F10F3008FC4AF /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		03896057264F10F3008FC4AF /* Build configuration list for PBXNativeTarget "ErgzUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				03896058264F10F3008FC4AF /* Debug */,
-				03896059264F10F3008FC4AF /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		03670B0326639F1E006C7408 /* XCRemoteSwiftPackageReference "GRDB.swift" */ = {
+		03CD11672712A6DA00BF89B5 /* XCRemoteSwiftPackageReference "GRDB" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/groue/GRDB.swift.git";
+			repositoryURL = "https://github.com/groue/GRDB.swift";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 5.8.0;
+				minimumVersion = 5.0.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		03670B0426639F1E006C7408 /* GRDB */ = {
+		03CD11682712A6DA00BF89B5 /* GRDB */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 03670B0326639F1E006C7408 /* XCRemoteSwiftPackageReference "GRDB.swift" */;
+			package = 03CD11672712A6DA00BF89B5 /* XCRemoteSwiftPackageReference "GRDB" */;
 			productName = GRDB;
 		};
 /* End XCSwiftPackageProductDependency section */

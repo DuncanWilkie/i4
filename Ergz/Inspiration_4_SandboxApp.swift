@@ -9,7 +9,7 @@ import SwiftUI
 import GRDB
 
 @main
-struct Inspiration_4_SandboxApp: App {
+struct Ergz: App {
     var body: some Scene {
         WindowGroup {
             ContentView().preferredColorScheme(/*@START_MENU_TOKEN@*/.dark/*@END_MENU_TOKEN@*/)
@@ -22,6 +22,12 @@ struct Inspiration_4_SandboxApp: App {
 
 
 struct Measurement: Codable, FetchableRecord, PersistableRecord { //used to write to DB in elegant way: try Measurment(...params...).insert(db)
+    var date: Date
+    var exposure: Double
+    var deposition: Double
+}
+
+struct Testrecord: Codable, FetchableRecord, PersistableRecord {
     var date: Date
     var exposure: Double
     var deposition: Double
@@ -77,6 +83,45 @@ class Scope: ObservableObject { //dumping ground for global state because Apple 
                     t.column("DEPOSITION", .double).notNull()
                 }
             }
+            
+            try dbQueue.write {  db in
+                try db.drop(table: "TESTRECORD")
+                try db.create(table: "TESTRECORD", ifNotExists: true) { t in
+                    t.autoIncrementedPrimaryKey("ID")
+                    t.column("DATE", .text).notNull()
+                    t.column("EXPOSURE", .double).notNull()
+                    t.column("DEPOSITION", .double).notNull()
+                }
+            }
+            
+        
+                do {
+                    let content = try String(contentsOfFile: Bundle.main.bundlePath + "/aggregated.csv")
+                    let parsedCSV: [String] = content.components(
+                        separatedBy: "\r\n"
+                    )
+                    
+                    for i in parsedCSV.dropFirst().dropLast() {
+                        let row: [String] = i.components(separatedBy: ",")
+                        
+                        try dbQueue.write { db in
+                            try Testrecord(date: Date(timeIntervalSince1970: Double(row[1]) ?? 0),
+                                       exposure: Double(row[2]) ?? 0,
+                                       deposition: Double(row[3]) ?? 0).insert(db)
+                        }
+                        
+                    }
+                    
+                    try dbQueue.read { db in
+                        let min = Testrecord.select(min(Column("date")), as: String.self)
+                        let max = Testrecord.select(max(Column("date")), as: String.self)
+                        try testTimeBounds = (fromSQL(min.fetchOne(db)!), fromSQL(max.fetchOne(db)!))
+                    }
+                } catch {
+                    print("TESTRECORD not generated")
+                    print(error)
+                }
+            
         } catch {
             print(error)
         }

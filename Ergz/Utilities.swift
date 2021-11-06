@@ -10,37 +10,7 @@ import GRDB
 import Combine
 
 
-//wrapper for the Python function supplied by ADVACAM. We use PythonKit
-//mostly so we don't have to clutter up with LUTs, but also so
-//any lazy-evaluation typecasting behavior is consistent with provided code.
-func decodePixel(data: Data) -> (Int, Int, Int, Float, Int) {
-    guard data.count == 6 else {
-        print("\(data.count) bytes passed to processPixel; expected 6")
-        return (-1, -1, -1, Float.infinity, -1)
-    }
-    
-    let data = [UInt8](data)
-    let address: UInt16 = (UInt16(data[0]) & 0x0f) << 12 | (UInt16(data[1]) << 4) | ((UInt16(data[2]) << 4) & 0x0f)
-    var toa: UInt16 = ((UInt16(data[2]) & 0x0f) << 10) | (UInt16(data[3]) << 2) | ((UInt16(data[4]) >> 6) & 0x03)
-    var tot: UInt16 = ((UInt16(data[4]) & 0x3f) << 4) | ((UInt16(data[5]) >> 4) & 0x0f)
-    var ftoa = (data[5] & 0x0f)
-    let eoc = (address >> 9) & 0x7f
-    let sp = (address >> 9) & 0x3f
-    let pix = address & 0x07
-    let x = Int(eoc) * 2 + (Int(pix) / 4)
-    let y = Int(sp) * 4 + (Int(pix) % 4)
-    
-    toa = UInt16((toa >= 1 && toa < MAX_LUT_ITOT) ? LUT_ITOT[Int(toa)] : WRONG_LUT_ITOT)
-    ftoa = ftoa + UInt8(LUT_COLSHIFT4[x])
-    
-    tot = UInt16((tot >= 1 && tot < MAX_LUT_TOT) ? LUT_TOT[Int(tot)] : WRONG_LUT_TOT)
-    return (x, y, Int(tot), Float(toa), Int(ftoa))
-}
-
-
-
-
-//wrapper for converting Swift date to SQLite time-value
+// for converting Swift date to SQLite time-value
 func toSQL(_ date : Date) -> String {
     let formatter = DateFormatter()
     formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -54,7 +24,7 @@ func toSQL(_ date : Date) -> String {
 func fromSQL(_ string : String) -> Date {
     let formatter = DateFormatter()
     formatter.locale = Locale(identifier: "en_US_POSIX")
-    formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
+    formatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
     formatter.timeZone = TimeZone(secondsFromGMT: 0) //SQLite does ISO-8601
     
     return formatter.date(from: string)!
@@ -107,6 +77,7 @@ extension Array {
     }
 }
 
+
 //Extracts data points to be graphed from the database and computes the necessary autoranging parameters.
 //Also very messily avoids rerunning the intensive initializer during ObservedObject updates via a
 //boolean init parameter. Should refactor, probably won't--no control flow in view bodies complicates things.
@@ -156,7 +127,7 @@ class CollectionWindow {
                 GROUP BY
                     DATE_MID;
                 """
-            print(query)
+            
             //executing query
             let dbQ = Scope.db.queue
             var result: [Row] = []
@@ -226,7 +197,7 @@ class TestWindow {
                 partitions.append((center, (begin, end)))
             }
             
-            print("starting test")
+    
 
             //query preparation
             var query: String = "SELECT AVG(DEPOSITION / EXPOSURE) AS AVG,  CASE "
@@ -243,7 +214,7 @@ class TestWindow {
                 GROUP BY
                     DATE_MID;
                 """
-            print(query)
+            
             //executing query
             let dbQ = Scope.db.queue
             var result: [Row] = []

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct LinesView: View {
-    var window: CollectionWindow
+    var window: TestWindow
     @State var displayInfo: Bool = false
     @State var pressLocation: CGPoint = CGPoint.zero
     @State var nearestDatum: (Date, Double) = (Date(timeIntervalSinceReferenceDate: 0), 0) {

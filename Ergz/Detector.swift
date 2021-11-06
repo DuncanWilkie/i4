@@ -25,17 +25,45 @@ struct TpxPacket: Equatable {
     var packetID: UInt16
     var mode: UInt8
     var nPixels: UInt8
+    var checksumMatched: UInt8
     var pixelData: [[UInt8]]
 }
 
-enum PacketStage {
+enum parseStage {
+    case head
     case frameID
     case packetID
     case mode
     case nPixels
+    case checksumMatched
     case pixelData
 }
 
+// translation of the wonderfully-named convert_packet() function from ADVACAM.
+// colShiftNum is always 4 in their code, and for now we only need ToA/ToT tpx_mode.
+func decodePixel(data: Data) -> (Int, Int, UInt16, UInt16, UInt8) {
+    guard data.count == 6 else {
+        print("\(data.count) bytes passed to processPixel; expected 6")
+        return (0,0,0,0,0)
+    }
+    
+    let data = [UInt8](data)
+    let address: UInt16 = ((UInt16(data[0]) & 0x0f) << 12) | (UInt16(data[1]) << 4) | ((UInt16(data[2]) >> 4) & 0x0f)
+    var toa: UInt16 = ((UInt16(data[2]) & 0x0f) << 10) | (UInt16(data[3]) << 2) | ((UInt16(data[4]) >> 6) & 0x03)
+    var tot: UInt16 = ((UInt16(data[4]) & 0x3f) << 4) | ((UInt16(data[5]) >> 4) & 0x0f)
+    var ftoa = (UInt8(data[5]) & 0x0f)
+    let eoc = (address >> 9) & 0x7f
+    let sp = (address >> 3) & 0x3f
+    let pix = address & 0x07
+    let x = Int(eoc) * 2 + (Int(pix) / 4)
+    let y = Int(sp) * 4 + (Int(pix) % 4)
+    
+    toa = UInt16((toa >= 1 && toa < MAX_LUT_TOA) ? LUT_TOA[Int(toa)] : WRONG_LUT_TOA)
+    ftoa = ftoa + UInt8(LUT_COLSHIFT4[Int(x)])
+    tot = UInt16((tot >= 1 && tot < MAX_LUT_TOT) ? LUT_TOT[Int(tot)] : WRONG_LUT_TOT)
+    
+    return (x, y, tot, toa, ftoa)
+}
 
 
 class Detector: NSObject, StreamDelegate, ObservableObject {
@@ -44,7 +72,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
     var nc = NotificationCenter.default
     
     
-    let fm = DateFormatter()
+    let fm = DateFormatter() // expensive to create, so we don't do it on every update to measuring
     var url: URL?
     var measuring = false {
         willSet {
@@ -59,22 +87,21 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
             }
         }
     }
-    var receiving = false
     
     var lastMetadata: [Dictionary<String, AnyObject>] = []
-    var preparingFrame: [(Int, Int, Int, Float, Int)] = []
+    var preparingFrame: [(Int, Int, UInt16, UInt16, UInt8)] = []
     var badPackets: Int = 0
     var frameCount: Int = 0
-    var preparingTpxPacket = TpxPacket(frameID: 0, packetID: 0, mode: 0, nPixels: 0, pixelData: [])
-    var packetStage: PacketStage = .frameID
+    var preparingTpxPacket = TpxPacket(frameID: 0, packetID: 0, mode: 0, nPixels: 0, checksumMatched: 0, pixelData: [])
+    var parseStage: parseStage = .head
     var subIndex = 0
     var pixelsRead = 0
     var lastFrameID = 0
     
     //state consumed by views
     @Published var isConnected: Bool = false
-    @Published var lastFrame: [Float] = [Float](repeating: 0.0, count: 65536)
-    @Published var lastValue: Double = 0
+    @Published var lastFrame: [Int:(UInt16, UInt16, UInt8)] = [:]
+    @Published var lastValue: Int = 0
     @Published var temperature: Double = 0
     @Published var stateDesc = "Initializing..."
     var bytesRead = 0
@@ -89,7 +116,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
         
         super.init() //NSObject init
         
-        //register self as observer and enter connection and disconnection methods on recieving associated messages
+        //register self as observer and enter connection and disconnection methods on receiving associated messages
         nc.addObserver(self, selector: #selector(self.onConnection(_:)), name: .EAAccessoryDidConnect, object: nil)
         nc.addObserver(self, selector: #selector(self.onDisconnection(_:)), name: .EAAccessoryDidDisconnect, object: nil)
         //actually receive EA.* messages thru NC in this scope
@@ -151,94 +178,113 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
         print("packet received")
         if isConnected {
             while stream.hasBytesAvailable {
-                let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: 128)
+                let temp = UnsafeMutablePointer<UInt8>.allocate(capacity: 512)
                 
-                stream.read(buffer, maxLength: 128)
+                stream.read(temp, maxLength: 512)
                 
-                let temp = Data(buffer: UnsafeMutableBufferPointer<UInt8>(start: buffer, count: 128))
+                let buffer = Data(buffer: UnsafeMutableBufferPointer<UInt8>(start: temp, count: 512))
+                temp.deallocate()
                 
                 //write raw stream data to file
-                let defaultUrl = Scope.db.icloudURL!.appendingPathComponent("nildump")
+                let defaultUrl = Scope.db.icloudURL!.appendingPathComponent("rawdump")
                 DispatchQueue.global(qos: .utility).async {
                     if FileManager.default.fileExists(atPath: (self.url ?? defaultUrl).path) {
                         if let fileHandle = try? FileHandle(forWritingTo: (self.url ?? defaultUrl)) {
                             fileHandle.seekToEndOfFile()
-                            fileHandle.write(temp)
+                            fileHandle.write(buffer)
                             fileHandle.closeFile()
                         }
                     } else {
-                        try? temp.write(to: (self.url ?? defaultUrl), options: .atomicWrite)
+                        try? buffer.write(to: (self.url ?? defaultUrl), options: .atomicWrite)
                     }
                 }
-                bytesRead += temp.count
-                /*for i in temp { //parse the stream for TPX packets & frames, writing to all expecting sources as expected
-                    if packetStage == .frameID {
-                        if subIndex == 0 {
-                            preparingTpxPacket.frameID = UInt16(i) << 8
-                            subIndex += 1
-                        } else if subIndex == 1 {
-                            preparingTpxPacket.frameID |= UInt16(i)
-                            subIndex = 0
-                            packetStage = .packetID
-                        }
-                    } else if packetStage == .packetID {
-                        if subIndex == 0 {
-                            preparingTpxPacket.packetID = UInt16(i) << 8
-                            subIndex += 1
-                        } else if subIndex == 1{
-                            preparingTpxPacket.packetID |= UInt16(i)
-                            subIndex = 0
-                            packetStage = .mode
-                        }
-                    } else if packetStage == .mode {
-                        preparingTpxPacket.mode = i
-                        packetStage = .nPixels
-                    } else if packetStage == .nPixels {
-                        preparingTpxPacket.nPixels = i
-                        packetStage = .pixelData
-                    } else if packetStage == .pixelData {
-                        if subIndex == 0 {
-                            preparingTpxPacket.pixelData.append([i])
-                            subIndex += 1
-                        }
-                        if subIndex < 5 {
-                            preparingTpxPacket.pixelData[preparingTpxPacket.pixelData.count - 1].append(i)
-                            subIndex += 1
-                        }
-                        if subIndex == 5 {
-                            preparingTpxPacket.pixelData[preparingTpxPacket.pixelData.count - 1].append(i)
-                            let pixel = Data(preparingTpxPacket.pixelData[preparingTpxPacket.pixelData.count - 1])
-                            let decoded = decodePixel(data: pixel)
-                            pixelsRead += 1
-                            subIndex = 0
-                            
-                            if pixelsRead == preparingTpxPacket.nPixels {
-                                print("packet \(preparingTpxPacket.packetID) read")
-                                if preparingTpxPacket.frameID == lastFrameID {
-                                    preparingFrame.append(decoded)
-                                } else {
-                                    lastFrameID += 1
-                                    let active = Dictionary(uniqueKeysWithValues: preparingFrame.map{($0.0 + 256 * ($0.1 - 1), $0)})
-                                    lastFrame = (1...65536).map { pixelIndex in
-                                        if let _ = active[pixelIndex] {
-                                            return active[pixelIndex]!.3
-                                        } else {
-                                            return 0.0
-                                        }
-                                    }
-                                    stateDesc = "Measuring: frame ID \(lastFrameID) received"
-                                    lastValue = preparingFrame.reduce(0.0, {x, y in x + Double(y.3)})
-                                    try? Scope.db.write(Measurement(date: Date(), exposure: 0.2, deposition: lastValue))
-                                    packetStage = .frameID
-                                }
-                            }
+                
+                bytesRead += buffer.count
+                
+                for byte in buffer { // parse the stream for TPX packets & frames, writing to all expecting sources as expected
+                    
+                    if parseStage != .pixelData {print(parseStage)}
+                    
+                    switch (parseStage) {
+                    case .head:
+                        if byte == 0x14 {
+                            parseStage = .frameID
                         }
                         
+                    case .frameID:
+                        if subIndex == 0 {
+                            preparingTpxPacket.frameID = UInt16(byte)
+                            subIndex += 1
+                        } else if subIndex == 1 {
+                            preparingTpxPacket.frameID |= UInt16(byte) << 8
+                            print("frameID: " + String(format: "%02X", preparingTpxPacket.frameID))
+                            subIndex = 0
+                            parseStage = .packetID
+                        }
+                        
+                    case .packetID:
+                        if subIndex == 0 {
+                            preparingTpxPacket.packetID = UInt16(byte)
+                            subIndex += 1
+                        } else if subIndex == 1 {
+                            preparingTpxPacket.packetID |= UInt16(byte) << 8
+                            subIndex = 0
+                            parseStage = .mode
+                            print("packetID: " + String(format: "%02X", preparingTpxPacket.packetID))
+                        }
+                        
+                    case .mode:
+                        preparingTpxPacket.mode = byte
+                        parseStage = .nPixels
+                        print("mode: " + String(format: "%02X", preparingTpxPacket.mode))
+                        
+                    case .nPixels:
+                        preparingTpxPacket.nPixels = byte
+                        print(String("nPixels: " + String(byte)))
+                        if preparingTpxPacket.nPixels == 0 { // nullary packets are sent after frames end; write out & reset here
+                            lastFrame = Dictionary(uniqueKeysWithValues: preparingFrame.map{($0 + 256 * ($1 - 1), ($2, $3, $4))})
+                            
+                            stateDesc = "Measuring: frame ID \(preparingTpxPacket.frameID) received"
+                            lastValue = preparingFrame.reduce(0, {x, y in Int(x) + Int(y.2)})
+                            //try? Scope.db.write(Measurement(date: Date(), exposure: 0.2, deposition: lastValue))
+                            
+                            parseStage = .head
+                            preparingFrame = []
+                        } else {
+                            parseStage = .checksumMatched
+                        }
+                        
+                    case .checksumMatched:
+                        preparingTpxPacket.checksumMatched = byte
+                        parseStage = .pixelData
+                        
+                    case .pixelData:
+                        print(pixelsRead)
+                        if subIndex == 0 {
+                            preparingTpxPacket.pixelData.append([byte])
+                            subIndex += 1
+                        } else if subIndex < 5 {
+                            preparingTpxPacket.pixelData[preparingTpxPacket.pixelData.count - 1].append(byte)
+                            subIndex += 1
+                        }
+                        
+                        else {
+                            preparingTpxPacket.pixelData[preparingTpxPacket.pixelData.count - 1].append(byte)
+                            let pixel = Data(preparingTpxPacket.pixelData[preparingTpxPacket.pixelData.count - 1])
+                            for i in pixel {print(String(format: "%02X", i))}
+                            let decoded = decodePixel(data: pixel)
+                            print("decoded: \(decoded)")
+                            pixelsRead += 1
+                            subIndex = 0
+                            preparingFrame.append(decoded)
+                            print(decoded.0, decoded.1)
+                            if pixelsRead == preparingTpxPacket.nPixels { // reset packet parsing
+                                pixelsRead = 0
+                                parseStage = .head
+                            }
+                        }
                     }
-                }*/
-                
-                buffer.deallocate()
-                stateDesc = "Measuring: read \(bytesRead) bytes."
+                }
             }
         }
     }

@@ -8,7 +8,6 @@ import SwiftUI
 import Combine
 
 
-
 struct ContentView: View {
     @ObservedObject var slider = DoubleSlider(Scope.db.testTimeBounds)
     @ObservedObject var detector = Detector.ins
@@ -23,10 +22,10 @@ struct ContentView: View {
                 SliderView(slider: slider)
                 StatisticArray()
             }
-            
             .tabItem {
                 Label("Data", systemImage: "waveform.path.ecg")
             }
+            
             VStack {
                 //Image()
                 ZStack(alignment: .leading) {
@@ -39,43 +38,53 @@ struct ContentView: View {
                             .padding(.leading, 10)
                         Spacer()
                     }
-                    
                 }
                 
                 FrameView()
                     .border(Color(white: 0.47), width: 2)
+                
                 HStack {
-                Form {
-                    Toggle("Record", isOn: $detector.measuring)
-                        .toggleStyle(SwitchToggleStyle())
-                    
-                    
-                    TextField(text: $framerate, prompt: Text("Framerate (Hz)")) {
-                        Text("Framerate (Hz)")
-                    }
-                    .keyboardType(.numberPad)
-                    .onReceive(Just(framerate)) { newValue in
-                        let filtered = newValue.filter { "0123456789.".contains($0) }
-                        if filtered != newValue {
-                            self.framerate = filtered
+                    Form {
+                        Toggle("Record", isOn: $detector.measuring)
+                            .toggleStyle(SwitchToggleStyle())
+                        
+                        
+                        TextField(text: $framerate, prompt: Text("Framerate (Hz)")) {
+                            Text("Framerate (Hz)")
+                        }
+                        .keyboardType(.numberPad)
+                        .onReceive(Just(framerate)) { newValue in
+                            let filtered = newValue.filter { "0123456789.".contains($0) }
+                            if filtered != newValue {
+                                self.framerate = filtered
+                            }
                         }
                     }
                     
-                }.frame(width: 500, height: 200, alignment: .leading)
-                
-                    
+                    .frame(width: 500, height: 200, alignment: .leading)
                 }
+            }
+            
+            .preferredColorScheme(.dark)
+            .tabItem {
+                Label("Device", systemImage: "info.circle.fill")
+            }
+            
+            Form {
                 
-                    
-            }.preferredColorScheme(.dark)
-                .tabItem {
-                    Label("Device", systemImage: "info.circle.fill")
+                Section {
+                    List(detectors ?? [])  { detector in
+                        Text(detector)
+                    }
                 }
-            Text("Configuration")
+            }
                 .tabItem {
                     Label("Settings", systemImage: "gear")
                 }
-        }.preferredColorScheme(/*@START_MENU_TOKEN@*/.dark/*@END_MENU_TOKEN@*/)
+        }
+        
+        .preferredColorScheme(/*@START_MENU_TOKEN@*/.dark/*@END_MENU_TOKEN@*/)
+        
     }
 }
 

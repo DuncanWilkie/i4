@@ -20,7 +20,7 @@ struct Hatching: View {
                                              y: CGFloat(i) / CGFloat(density) * reader.size.height -
                                                 reader.size.width))
                 }
-            }.stroke(Color.black, lineWidth: CGFloat(width) ).offset(x:0, y: 110)
+            }.stroke(Color.black, lineWidth: CGFloat(width)).offset(x:0, y: 110)
         }
     }
 }

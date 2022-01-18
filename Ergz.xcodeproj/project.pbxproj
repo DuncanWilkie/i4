@@ -26,6 +26,8 @@
 		03ABA652268D0FA800D734A0 /* StatisticArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03ABA651268D0FA800D734A0 /* StatisticArray.swift */; };
 		03ABA658268D82EA00D734A0 /* Statistic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03ABA657268D82EA00D734A0 /* Statistic.swift */; };
 		03AE744D2733924E009366B7 /* test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03AE744C2733924E009366B7 /* test.swift */; };
+		03AE744F27371685009366B7 /* SettingsImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03AE744E27371685009366B7 /* SettingsImportView.swift */; };
+		03AE7451273A492B009366B7 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03AE7450273A492B009366B7 /* Config.swift */; };
 		03CD11692712A6DA00BF89B5 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 03CD11682712A6DA00BF89B5 /* GRDB */; };
 		03CD116B2712BE8200BF89B5 /* DialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03CD116A2712BE8200BF89B5 /* DialView.swift */; };
 /* End PBXBuildFile section */
@@ -53,6 +55,8 @@
 		03ABA651268D0FA800D734A0 /* StatisticArray.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticArray.swift; sourceTree = "<group>"; };
 		03ABA657268D82EA00D734A0 /* Statistic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Statistic.swift; sourceTree = "<group>"; };
 		03AE744C2733924E009366B7 /* test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = test.swift; sourceTree = "<group>"; };
+		03AE744E27371685009366B7 /* SettingsImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsImportView.swift; sourceTree = "<group>"; };
+		03AE7450273A492B009366B7 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		03CD116A2712BE8200BF89B5 /* DialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DialView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -93,6 +97,7 @@
 				03AE744C2733924E009366B7 /* test.swift */,
 				03421F88267A0E0F00178BDB /* Detector.swift */,
 				03421F862679971F00178BDB /* Utilities.swift */,
+				03AE7450273A492B009366B7 /* Config.swift */,
 				0389605E265BEF82008FC4AF /* Views */,
 				03896033264F10F2008FC4AF /* Assets.xcassets */,
 				03896038264F10F2008FC4AF /* Info.plist */,
@@ -125,6 +130,7 @@
 				036B3F5B269BFE390022729D /* FrameView.swift */,
 				037DAA1726B396E7004A7E7C /* SplashView.swift */,
 				03CD116A2712BE8200BF89B5 /* DialView.swift */,
+				03AE744E27371685009366B7 /* SettingsImportView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -209,6 +215,8 @@
 				03421F852673952B00178BDB /* LinesView.swift in Sources */,
 				03AE744D2733924E009366B7 /* test.swift in Sources */,
 				03ABA652268D0FA800D734A0 /* StatisticArray.swift in Sources */,
+				03AE744F27371685009366B7 /* SettingsImportView.swift in Sources */,
+				03AE7451273A492B009366B7 /* Config.swift in Sources */,
 				03896060265BF084008FC4AF /* GaugeView.swift in Sources */,
 				0389605B264F1C39008FC4AF /* NoConnection.swift in Sources */,
 				03670B0A26666C85006C7408 /* DoubleSlider.swift in Sources */,

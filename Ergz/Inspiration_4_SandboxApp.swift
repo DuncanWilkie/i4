@@ -152,5 +152,4 @@ class Scope: ObservableObject { //dumping ground for global state because Apple 
         self.timeBounds = (earliest, latest)
         
     }
-    
 }

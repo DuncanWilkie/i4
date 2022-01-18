@@ -84,7 +84,7 @@ struct DialView: View {
 
 struct DialView_Previews: PreviewProvider {
     static var previews: some View {
-        DialView(bounds: (15.0,25.0), stepSize: 0.1)
+        DialView(bounds: (15.0, 25.0), stepSize: 0.1)
         .preferredColorScheme(.dark)
     }
 }

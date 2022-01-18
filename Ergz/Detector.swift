@@ -203,7 +203,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
                 
                 for byte in buffer { // parse the stream for TPX packets & frames, writing to all expecting sources as expected
                     
-                    if parseStage != .pixelData {print(parseStage)}
+                    //if parseStage != .pixelData {print(parseStage)}
                     
                     switch (parseStage) {
                     case .head:
@@ -217,7 +217,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
                             subIndex += 1
                         } else if subIndex == 1 {
                             preparingTpxPacket.frameID |= UInt16(byte) << 8
-                            print("frameID: " + String(format: "%02X", preparingTpxPacket.frameID))
+                            //print("frameID: " + String(format: "%02X", preparingTpxPacket.frameID))
                             subIndex = 0
                             parseStage = .packetID
                         }
@@ -230,17 +230,17 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
                             preparingTpxPacket.packetID |= UInt16(byte) << 8
                             subIndex = 0
                             parseStage = .mode
-                            print("packetID: " + String(format: "%02X", preparingTpxPacket.packetID))
+                            //print("packetID: " + String(format: "%02X", preparingTpxPacket.packetID))
                         }
                         
                     case .mode:
                         preparingTpxPacket.mode = byte
                         parseStage = .nPixels
-                        print("mode: " + String(format: "%02X", preparingTpxPacket.mode))
+                        //print("mode: " + String(format: "%02X", preparingTpxPacket.mode))
                         
                     case .nPixels:
                         preparingTpxPacket.nPixels = byte
-                        print(String("nPixels: " + String(byte)))
+                        //print(String("nPixels: " + String(byte)))
                         if preparingTpxPacket.nPixels == 0 { // nullary packets are sent after frames end; write out & reset here
                             lastFrame = Dictionary(uniqueKeysWithValues: preparingFrame.map{($0 + 256 * ($1 - 1), ($2, $3, $4))})
                             
@@ -259,7 +259,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
                         parseStage = .pixelData
                         
                     case .pixelData:
-                        print(pixelsRead)
+                        //print(pixelsRead) 
                         if subIndex == 0 {
                             preparingTpxPacket.pixelData.append([byte])
                             subIndex += 1
@@ -271,13 +271,13 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
                         else {
                             preparingTpxPacket.pixelData[preparingTpxPacket.pixelData.count - 1].append(byte)
                             let pixel = Data(preparingTpxPacket.pixelData[preparingTpxPacket.pixelData.count - 1])
-                            for i in pixel {print(String(format: "%02X", i))}
+                            //for i in pixel {print(String(format: "%02X", i))}
                             let decoded = decodePixel(data: pixel)
-                            print("decoded: \(decoded)")
+                            //print("decoded: \(decoded)")
                             pixelsRead += 1
                             subIndex = 0
                             preparingFrame.append(decoded)
-                            print(decoded.0, decoded.1)
+                            //print(decoded.0, decoded.1)
                             if pixelsRead == preparingTpxPacket.nPixels { // reset packet parsing
                                 pixelsRead = 0
                                 parseStage = .head

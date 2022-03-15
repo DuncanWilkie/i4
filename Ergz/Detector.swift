@@ -29,6 +29,23 @@ struct TpxPacket: Equatable {
     var pixelData: [[UInt8]]
 }
 
+struct PixelData {
+    var tot: UInt16
+    var toa: UInt16
+    var ftoa: UInt8
+}
+
+struct PixelCoords: Hashable {
+    var x: Int
+    var y: Int
+}
+
+typealias Pixel = (coords: PixelCoords, data: PixelData)
+typealias Frame = [PixelCoords : PixelData] // associate (x,y) for x,y <- 1...256 with pixel data.
+typealias CalibratedFrame = [PixelCoords : Double]
+
+
+
 enum parseStage {
     case head
     case frameID
@@ -41,10 +58,10 @@ enum parseStage {
 
 // translation of the wonderfully-named convert_packet() function from ADVACAM.
 // colShiftNum is always 4 in their code, and for now we only need ToA/ToT tpx_mode.
-func decodePixel(data: Data) -> (Int, Int, UInt16, UInt16, UInt8) {
+func decodePixel(data: Data) -> Pixel {
     guard data.count == 6 else {
         print("\(data.count) bytes passed to processPixel; expected 6")
-        return (0,0,0,0,0)
+        return (PixelCoords(x: 0, y: 0), PixelData(tot: 0, toa: 0, ftoa: 0))
     }
     
     let data = [UInt8](data)
@@ -62,7 +79,24 @@ func decodePixel(data: Data) -> (Int, Int, UInt16, UInt16, UInt8) {
     ftoa = ftoa + UInt8(LUT_COLSHIFT4[Int(x)])
     tot = UInt16((tot >= 1 && tot < MAX_LUT_TOT) ? LUT_TOT[Int(tot)] : WRONG_LUT_TOT)
     
-    return (x, y, tot, toa, ftoa)
+    return (PixelCoords(x: x, y: y), PixelData(tot: tot, toa: toa, ftoa: ftoa))
+}
+                         
+func calibratedFrame(uncalibrated: Frame, detectorID: String) -> CalibratedFrame {
+    var calibrated: CalibratedFrame = [:]
+    for (coords, pixData) in uncalibrated {
+        let tot = Double(Float16(bitPattern: pixData.tot))
+        let pixcal = Saved.ins.detectors.first{$0.id == detectorID}!.cal[coords]!
+        let b = tot + pixcal.a * pixcal.t - pixcal.b
+        let sq = pow(pixcal.b - pixcal.a * pixcal.t - tot, 2)
+        let ac = 4 * pixcal.a * (tot * pixcal.t - pixcal.b * pixcal.t - pixcal.c)
+        let energy = (b + sqrt(sq - ac)) / (2 * pixcal.a) // calculation following doi:10.1088/1742-6596/396/2/022023
+                                                          // notably, the inversion of the TOT(Energy) formula given is not unique; I've taken the positive branch here.
+        calibrated[coords] = Double(energy)
+    }
+    
+    return calibrated
+    
 }
 
 
@@ -70,7 +104,6 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
     var session: EASession?
     var manager = EAAccessoryManager.shared()
     var nc = NotificationCenter.default
-    
     
     let fm = DateFormatter() // expensive to create, so we don't do it on every update to measuring
     var url: URL?
@@ -89,7 +122,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
     }
     
     var lastMetadata: [Dictionary<String, AnyObject>] = []
-    var preparingFrame: [(Int, Int, UInt16, UInt16, UInt8)] = []
+    var preparingFrame: Frame = [:]
     var badPackets: Int = 0
     var frameCount: Int = 0
     var preparingTpxPacket = TpxPacket(frameID: 0, packetID: 0, mode: 0, nPixels: 0, checksumMatched: 0, pixelData: [])
@@ -100,9 +133,9 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
     
     //state consumed by views
     @Published var isConnected: Bool = false
-    @Published var lastFrame: [Int:(UInt16, UInt16, UInt8)] = [:]
-    @Published var lastValue: Int = 0
-    @Published var temperature: Double = 0
+    @Published var lastFrame: CalibratedFrame = [:]
+    @Published var lastValue: Double = 0.0
+    @Published var temperature: Double = 0.0
     @Published var stateDesc = "Initializing..."
     var bytesRead = 0
     
@@ -185,7 +218,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
                 let buffer = Data(buffer: UnsafeMutableBufferPointer<UInt8>(start: temp, count: 512))
                 temp.deallocate()
                 
-                //write raw stream data to file
+                //append raw stream data to iCloud file
                 let defaultUrl = Scope.db.icloudURL!.appendingPathComponent("rawdump")
                 DispatchQueue.global(qos: .utility).async {
                     if FileManager.default.fileExists(atPath: (self.url ?? defaultUrl).path) {
@@ -241,15 +274,21 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
                     case .nPixels:
                         preparingTpxPacket.nPixels = byte
                         //print(String("nPixels: " + String(byte)))
-                        if preparingTpxPacket.nPixels == 0 { // nullary packets are sent after frames end; write out & reset here
-                            lastFrame = Dictionary(uniqueKeysWithValues: preparingFrame.map{($0 + 256 * ($1 - 1), ($2, $3, $4))})
+                        if preparingTpxPacket.nPixels == 0 { // nullary packets are sent after frame's end; write out & reset here
+                            
+                            lastFrame = calibratedFrame(uncalibrated: preparingFrame, detectorID: Saved.ins.selected)
                             
                             stateDesc = "Measuring: frame ID \(preparingTpxPacket.frameID) received"
-                            lastValue = preparingFrame.reduce(0, {x, y in Int(x) + Int(y.2)})
-                            //try? Scope.db.write(Measurement(date: Date(), exposure: 0.2, deposition: lastValue))
-                            
+                            lastValue = lastFrame.reduce(0.0, {x, y in x + y.1})
+                            let volume = 2 * 0.005 // cm^3
+                            let density = 2.3212 // g/cm^3
+                            let mass = volume * density // g
+                            let dose = lastValue / (mass * 6.24e12) // calculation following doi:10.1088/1742-6596/396/2/022023
+                            try? Scope.db.write(Measurement(date: Date(), exposure: dose, deposition: lastValue))
+                            // save frames?
                             parseStage = .head
-                            preparingFrame = []
+                            preparingFrame = [:]
+                            
                         } else {
                             parseStage = .checksumMatched
                         }
@@ -276,7 +315,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
                             //print("decoded: \(decoded)")
                             pixelsRead += 1
                             subIndex = 0
-                            preparingFrame.append(decoded)
+                            preparingFrame[decoded.coords] = decoded.data
                             //print(decoded.0, decoded.1)
                             if pixelsRead == preparingTpxPacket.nPixels { // reset packet parsing
                                 pixelsRead = 0

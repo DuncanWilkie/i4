@@ -85,7 +85,7 @@ class Scope: ObservableObject { //dumping ground for global state because Apple 
             }
             
             try dbQueue.write {  db in
-                try db.drop(table: "TESTRECORD")
+               // try db.drop(table: "TESTRECORD")
                 try db.create(table: "TESTRECORD", ifNotExists: true) { t in
                     t.autoIncrementedPrimaryKey("ID")
                     t.column("DATE", .text).notNull()
@@ -93,8 +93,6 @@ class Scope: ObservableObject { //dumping ground for global state because Apple 
                     t.column("DEPOSITION", .double).notNull()
                 }
             }
-            
-        
                 do {
                     let content = try String(contentsOfFile: Bundle.main.bundlePath + "/aggregated.csv")
                     let parsedCSV: [String] = content.components(

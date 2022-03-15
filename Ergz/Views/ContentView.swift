@@ -48,15 +48,17 @@ struct ContentView: View {
                         Toggle("Record", isOn: $detector.measuring)
                             .toggleStyle(SwitchToggleStyle())
                         
-                        
-                        TextField(text: $framerate, prompt: Text("Framerate (Hz)")) {
-                            Text("Framerate (Hz)")
-                        }
-                        .keyboardType(.numberPad)
-                        .onReceive(Just(framerate)) { newValue in
-                            let filtered = newValue.filter { "0123456789.".contains($0) }
-                            if filtered != newValue {
-                                self.framerate = filtered
+                        HStack{
+                            //Text("Framerate")
+                            TextField(text: $framerate, prompt: Text("Framerate (Hz)")) {
+                                Text("Framerate (Hz)")
+                            }
+                            .keyboardType(.numberPad)
+                            .onReceive(Just(framerate)) { newValue in
+                                let filtered = newValue.filter { "0123456789.".contains($0) }
+                                if filtered != newValue {
+                                    self.framerate = filtered
+                                }
                             }
                         }
                     }
@@ -70,14 +72,8 @@ struct ContentView: View {
                 Label("Device", systemImage: "info.circle.fill")
             }
             
-            Form {
-                
-                Section {
-                    List(detectors ?? [])  { detector in
-                        Text(detector)
-                    }
-                }
-            }
+            
+            SettingsImportView()
                 .tabItem {
                     Label("Settings", systemImage: "gear")
                 }

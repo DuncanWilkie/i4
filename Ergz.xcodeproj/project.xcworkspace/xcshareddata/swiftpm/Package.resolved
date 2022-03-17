@@ -1,16 +1,23 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "GRDB",
-        "repositoryURL": "https://github.com/groue/GRDB.swift",
-        "state": {
-          "branch": null,
-          "revision": "32b2923e890df320906e64cbd0faca22a8bfda14",
-          "version": "5.12.0"
-        }
+  "pins" : [
+    {
+      "identity" : "grdb.swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/groue/GRDB.swift",
+      "state" : {
+        "branch" : "master",
+        "revision" : "9b0e41ad586d4a52d67143a73732e99e38c29d86"
       }
-    ]
-  },
-  "version": 1
+    },
+    {
+      "identity" : "zipfoundation",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/weichsel/ZIPFoundation",
+      "state" : {
+        "revision" : "7254c74b49cec2cb81520523ba993c671f71b066",
+        "version" : "0.9.14"
+      }
+    }
+  ],
+  "version" : 2
 }

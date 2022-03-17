@@ -9,7 +9,7 @@ import Combine
 
 
 struct ContentView: View {
-    @ObservedObject var slider = DoubleSlider(Scope.db.testTimeBounds)
+    @ObservedObject var slider = DoubleSlider(Store.db.testTimeBounds)
     @ObservedObject var detector = Detector.ins
     @State var framerate = ""
     var body: some View {
@@ -49,7 +49,7 @@ struct ContentView: View {
                             .toggleStyle(SwitchToggleStyle())
                         
                         HStack{
-                            //Text("Framerate")
+                            // TODO: Implement framerate message sending in Detector.ins
                             TextField(text: $framerate, prompt: Text("Framerate (Hz)")) {
                                 Text("Framerate (Hz)")
                             }
@@ -73,7 +73,7 @@ struct ContentView: View {
             }
             
             
-            SettingsImportView()
+            SettingsView(saved: Saved.ins)
                 .tabItem {
                     Label("Settings", systemImage: "gear")
                 }

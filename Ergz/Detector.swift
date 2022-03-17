@@ -29,22 +29,24 @@ struct TpxPacket: Equatable {
     var pixelData: [[UInt8]]
 }
 
-struct PixelData {
+struct PixelData: Codable {
     var tot: UInt16
     var toa: UInt16
     var ftoa: UInt8
 }
 
-struct PixelCoords: Hashable {
+struct PixelCoords: Codable, Hashable {
     var x: Int
     var y: Int
 }
 
-typealias Pixel = (coords: PixelCoords, data: PixelData)
+struct Pixel {
+    var coords: PixelCoords
+    var data: PixelData
+}
+
 typealias Frame = [PixelCoords : PixelData] // associate (x,y) for x,y <- 1...256 with pixel data.
 typealias CalibratedFrame = [PixelCoords : Double]
-
-
 
 enum parseStage {
     case head
@@ -61,7 +63,7 @@ enum parseStage {
 func decodePixel(data: Data) -> Pixel {
     guard data.count == 6 else {
         print("\(data.count) bytes passed to processPixel; expected 6")
-        return (PixelCoords(x: 0, y: 0), PixelData(tot: 0, toa: 0, ftoa: 0))
+        return Pixel(coords: PixelCoords(x: 0, y: 0), data: PixelData(tot: 0, toa: 0, ftoa: 0))
     }
     
     let data = [UInt8](data)
@@ -79,7 +81,7 @@ func decodePixel(data: Data) -> Pixel {
     ftoa = ftoa + UInt8(LUT_COLSHIFT4[Int(x)])
     tot = UInt16((tot >= 1 && tot < MAX_LUT_TOT) ? LUT_TOT[Int(tot)] : WRONG_LUT_TOT)
     
-    return (PixelCoords(x: x, y: y), PixelData(tot: tot, toa: toa, ftoa: ftoa))
+    return Pixel(coords: PixelCoords(x: x, y: y), data: PixelData(tot: tot, toa: toa, ftoa: ftoa))
 }
                          
 func calibratedFrame(uncalibrated: Frame, detectorID: String) -> CalibratedFrame {
@@ -114,8 +116,8 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
                 startMeas[0] = newValue ? 0xcb : 0xbc
                 session?.outputStream?.write(startMeas, maxLength: 1)
                 stateDesc = "Measuring: "
-                if !measuring {
-                    url = Scope.db.icloudURL?.appendingPathComponent(fm.string(from: Date()))
+                if !measuring { // files in the raw dump to iCloud are named by timestamp at the start of observation
+                    url = Store.db.icloudURL?.appendingPathComponent(fm.string(from: Date()))
                 }
             }
         }
@@ -139,7 +141,6 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
     @Published var stateDesc = "Initializing..."
     var bytesRead = 0
     
-    
     static var ins = Detector()
     
     private override init() {
@@ -152,14 +153,11 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
         //register self as observer and enter connection and disconnection methods on receiving associated messages
         nc.addObserver(self, selector: #selector(self.onConnection(_:)), name: .EAAccessoryDidConnect, object: nil)
         nc.addObserver(self, selector: #selector(self.onDisconnection(_:)), name: .EAAccessoryDidDisconnect, object: nil)
-        //actually receive EA.* messages thru NC in this scope
+        //actually receive EA.* messages thru NC in this Store
         self.manager.registerForLocalNotifications()
         
         self.stateDesc = "Waiting for detector..."
     }
-    
-    
-    
     
     
     @objc private func onConnection(_ notification: Notification) {
@@ -200,7 +198,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
         case Stream.Event.endEncountered:
             break
         case Stream.Event.errorOccurred:
-            print("Stream Error Occured: line \(#line) in \(#file)")
+            print("Stream Error \(eventCode) Occured: line \(#line) in \(#file)")
         default:
             print("Unrecognized stream event")
         }
@@ -218,8 +216,8 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
                 let buffer = Data(buffer: UnsafeMutableBufferPointer<UInt8>(start: temp, count: 512))
                 temp.deallocate()
                 
-                //append raw stream data to iCloud file
-                let defaultUrl = Scope.db.icloudURL!.appendingPathComponent("rawdump")
+                //append raw stream data to iCloud file TODO: backup GRDB FrameRecord instead
+                let defaultUrl = Store.db.icloudURL!.appendingPathComponent("rawdump")
                 DispatchQueue.global(qos: .utility).async {
                     if FileManager.default.fileExists(atPath: (self.url ?? defaultUrl).path) {
                         if let fileHandle = try? FileHandle(forWritingTo: (self.url ?? defaultUrl)) {
@@ -234,7 +232,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
                 
                 bytesRead += buffer.count
                 
-                for byte in buffer { // parse the stream for TPX packets & frames, writing to all expecting sources as expected
+                for byte in buffer { // parse the stream for TPX packets & frames, writing to all expecting sources
                     
                     //if parseStage != .pixelData {print(parseStage)}
                     
@@ -279,13 +277,14 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
                             lastFrame = calibratedFrame(uncalibrated: preparingFrame, detectorID: Saved.ins.selected)
                             
                             stateDesc = "Measuring: frame ID \(preparingTpxPacket.frameID) received"
-                            lastValue = lastFrame.reduce(0.0, {x, y in x + y.1})
+                            let totalled = lastFrame.reduce(0.0, {x, y in x + y.1})
                             let volume = 2 * 0.005 // cm^3
                             let density = 2.3212 // g/cm^3
                             let mass = volume * density // g
-                            let dose = lastValue / (mass * 6.24e12) // calculation following doi:10.1088/1742-6596/396/2/022023
-                            try? Scope.db.write(Measurement(date: Date(), exposure: dose, deposition: lastValue))
-                            // save frames?
+                            lastValue = totalled / (mass * 6.24e12) // calculation following doi:10.1088/1742-6596/396/2/022023
+                            let date = Date()
+                            try? Store.db.write(Measurement(date: date, exposure: 0.2, deposition: totalled, dose: lastValue)) // TODO: Change exposure time to 1 / framerate
+                            try? Store.db.write(FrameRecord(date: date, detector: Saved.ins.selected, frame: preparingFrame))
                             parseStage = .head
                             preparingFrame = [:]
                             

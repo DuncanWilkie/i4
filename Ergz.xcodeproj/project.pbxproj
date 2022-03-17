@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		030C959B26B6BFC30057ACFB /* LUTs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030C959A26B6BFC30057ACFB /* LUTs.swift */; };
-		03421F832673597600178BDB /* aggregated.csv in Resources */ = {isa = PBXBuildFile; fileRef = 03421F822673597600178BDB /* aggregated.csv */; };
 		03421F852673952B00178BDB /* LinesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03421F842673952B00178BDB /* LinesView.swift */; };
 		03421F872679971F00178BDB /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03421F862679971F00178BDB /* Utilities.swift */; };
 		03421F89267A0E0F00178BDB /* Detector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03421F88267A0E0F00178BDB /* Detector.swift */; };
@@ -25,17 +24,19 @@
 		03ABA650268452EC00D734A0 /* IndicatorLamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03ABA64F268452EC00D734A0 /* IndicatorLamp.swift */; };
 		03ABA652268D0FA800D734A0 /* StatisticArray.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03ABA651268D0FA800D734A0 /* StatisticArray.swift */; };
 		03ABA658268D82EA00D734A0 /* Statistic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03ABA657268D82EA00D734A0 /* Statistic.swift */; };
+		03AD542C27E11E4200767423 /* aggregated.csv in Resources */ = {isa = PBXBuildFile; fileRef = 03AD542B27E11E4200767423 /* aggregated.csv */; };
 		03AE744D2733924E009366B7 /* test.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03AE744C2733924E009366B7 /* test.swift */; };
-		03AE744F27371685009366B7 /* SettingsImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03AE744E27371685009366B7 /* SettingsImportView.swift */; };
+		03AE744F27371685009366B7 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03AE744E27371685009366B7 /* SettingsView.swift */; };
 		03AE7451273A492B009366B7 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03AE7450273A492B009366B7 /* Config.swift */; };
-		03CD11692712A6DA00BF89B5 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 03CD11682712A6DA00BF89B5 /* GRDB */; };
+		03C5DFAE27E2979800FB3F7C /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 03C5DFAD27E2979800FB3F7C /* ZIPFoundation */; };
+		03C5DFB027E30BE000FB3F7C /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C5DFAF27E30BE000FB3F7C /* Environment.swift */; };
 		03CD116B2712BE8200BF89B5 /* DialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03CD116A2712BE8200BF89B5 /* DialView.swift */; };
+		03D133D827E106B800CF971C /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 03D133D727E106B800CF971C /* GRDB */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		030C959A26B6BFC30057ACFB /* LUTs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LUTs.swift; sourceTree = "<group>"; };
 		0337464C26B59536001D4E77 /* Ergz.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Ergz.entitlements; sourceTree = "<group>"; };
-		03421F822673597600178BDB /* aggregated.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = aggregated.csv; path = ../../../../Downloads/aggregated.csv; sourceTree = "<group>"; };
 		03421F842673952B00178BDB /* LinesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinesView.swift; sourceTree = "<group>"; };
 		03421F862679971F00178BDB /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		03421F88267A0E0F00178BDB /* Detector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Detector.swift; sourceTree = "<group>"; };
@@ -54,9 +55,11 @@
 		03ABA64F268452EC00D734A0 /* IndicatorLamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndicatorLamp.swift; sourceTree = "<group>"; };
 		03ABA651268D0FA800D734A0 /* StatisticArray.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticArray.swift; sourceTree = "<group>"; };
 		03ABA657268D82EA00D734A0 /* Statistic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Statistic.swift; sourceTree = "<group>"; };
+		03AD542B27E11E4200767423 /* aggregated.csv */ = {isa = PBXFileReference; lastKnownFileType = text; path = aggregated.csv; sourceTree = "<group>"; };
 		03AE744C2733924E009366B7 /* test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = test.swift; sourceTree = "<group>"; };
-		03AE744E27371685009366B7 /* SettingsImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsImportView.swift; sourceTree = "<group>"; };
+		03AE744E27371685009366B7 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		03AE7450273A492B009366B7 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		03C5DFAF27E30BE000FB3F7C /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
 		03CD116A2712BE8200BF89B5 /* DialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DialView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -65,7 +68,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				03CD11692712A6DA00BF89B5 /* GRDB in Frameworks */,
+				03D133D827E106B800CF971C /* GRDB in Frameworks */,
+				03C5DFAE27E2979800FB3F7C /* ZIPFoundation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,6 +81,7 @@
 			children = (
 				0389602E264F10F1008FC4AF /* Ergz */,
 				0389602D264F10F1008FC4AF /* Products */,
+				03D133D627E106B800CF971C /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -91,12 +96,13 @@
 		0389602E264F10F1008FC4AF /* Ergz */ = {
 			isa = PBXGroup;
 			children = (
+				03AD542B27E11E4200767423 /* aggregated.csv */,
 				0337464C26B59536001D4E77 /* Ergz.entitlements */,
-				03421F822673597600178BDB /* aggregated.csv */,
 				0389602F264F10F1008FC4AF /* Inspiration_4_SandboxApp.swift */,
 				03AE744C2733924E009366B7 /* test.swift */,
 				03421F88267A0E0F00178BDB /* Detector.swift */,
 				03421F862679971F00178BDB /* Utilities.swift */,
+				03C5DFAF27E30BE000FB3F7C /* Environment.swift */,
 				03AE7450273A492B009366B7 /* Config.swift */,
 				0389605E265BEF82008FC4AF /* Views */,
 				03896033264F10F2008FC4AF /* Assets.xcassets */,
@@ -130,9 +136,16 @@
 				036B3F5B269BFE390022729D /* FrameView.swift */,
 				037DAA1726B396E7004A7E7C /* SplashView.swift */,
 				03CD116A2712BE8200BF89B5 /* DialView.swift */,
-				03AE744E27371685009366B7 /* SettingsImportView.swift */,
+				03AE744E27371685009366B7 /* SettingsView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		03D133D627E106B800CF971C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -149,10 +162,12 @@
 			buildRules = (
 			);
 			dependencies = (
+				03C5DFAB27E11F2800FB3F7C /* PBXTargetDependency */,
 			);
 			name = Ergz;
 			packageProductDependencies = (
-				03CD11682712A6DA00BF89B5 /* GRDB */,
+				03D133D727E106B800CF971C /* GRDB */,
+				03C5DFAD27E2979800FB3F7C /* ZIPFoundation */,
 			);
 			productName = "Inspiration 4 Sandbox";
 			productReference = 0389602C264F10F1008FC4AF /* Ergz.app */;
@@ -183,7 +198,8 @@
 			);
 			mainGroup = 03896023264F10F1008FC4AF;
 			packageReferences = (
-				03CD11672712A6DA00BF89B5 /* XCRemoteSwiftPackageReference "GRDB" */,
+				03D133D327E1068600CF971C /* XCRemoteSwiftPackageReference "GRDB" */,
+				03C5DFAC27E2979800FB3F7C /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 			);
 			productRefGroup = 0389602D264F10F1008FC4AF /* Products */;
 			projectDirPath = "";
@@ -199,9 +215,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				03AD542C27E11E4200767423 /* aggregated.csv in Resources */,
 				03896037264F10F2008FC4AF /* Preview Assets.xcassets in Resources */,
 				03896034264F10F2008FC4AF /* Assets.xcassets in Resources */,
-				03421F832673597600178BDB /* aggregated.csv in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -215,12 +231,13 @@
 				03421F852673952B00178BDB /* LinesView.swift in Sources */,
 				03AE744D2733924E009366B7 /* test.swift in Sources */,
 				03ABA652268D0FA800D734A0 /* StatisticArray.swift in Sources */,
-				03AE744F27371685009366B7 /* SettingsImportView.swift in Sources */,
+				03AE744F27371685009366B7 /* SettingsView.swift in Sources */,
 				03AE7451273A492B009366B7 /* Config.swift in Sources */,
 				03896060265BF084008FC4AF /* GaugeView.swift in Sources */,
 				0389605B264F1C39008FC4AF /* NoConnection.swift in Sources */,
 				03670B0A26666C85006C7408 /* DoubleSlider.swift in Sources */,
 				03ABA650268452EC00D734A0 /* IndicatorLamp.swift in Sources */,
+				03C5DFB027E30BE000FB3F7C /* Environment.swift in Sources */,
 				03ABA658268D82EA00D734A0 /* Statistic.swift in Sources */,
 				03896032264F10F1008FC4AF /* ContentView.swift in Sources */,
 				03896030264F10F1008FC4AF /* Inspiration_4_SandboxApp.swift in Sources */,
@@ -235,6 +252,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		03C5DFAB27E11F2800FB3F7C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 03C5DFAA27E11F2800FB3F7C /* GRDB */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		0389604F264F10F3008FC4AF /* Debug */ = {
@@ -440,20 +464,38 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		03CD11672712A6DA00BF89B5 /* XCRemoteSwiftPackageReference "GRDB" */ = {
+		03C5DFAC27E2979800FB3F7C /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/weichsel/ZIPFoundation";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.9.9;
+			};
+		};
+		03D133D327E1068600CF971C /* XCRemoteSwiftPackageReference "GRDB" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/groue/GRDB.swift";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 5.0.0;
+				branch = master;
+				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		03CD11682712A6DA00BF89B5 /* GRDB */ = {
+		03C5DFAA27E11F2800FB3F7C /* GRDB */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 03CD11672712A6DA00BF89B5 /* XCRemoteSwiftPackageReference "GRDB" */;
+			package = 03D133D327E1068600CF971C /* XCRemoteSwiftPackageReference "GRDB" */;
+			productName = GRDB;
+		};
+		03C5DFAD27E2979800FB3F7C /* ZIPFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 03C5DFAC27E2979800FB3F7C /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
+			productName = ZIPFoundation;
+		};
+		03D133D727E106B800CF971C /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 03D133D327E1068600CF971C /* XCRemoteSwiftPackageReference "GRDB" */;
 			productName = GRDB;
 		};
 /* End XCSwiftPackageProductDependency section */

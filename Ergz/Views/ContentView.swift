@@ -9,17 +9,20 @@ import Combine
 
 
 struct ContentView: View {
-    @ObservedObject var slider = DoubleSlider(Store.db.testTimeBounds)
-    @ObservedObject var detector = Detector.ins
-    @State var framerate = ""
+    @EnvironmentObject var config: Config
+    @EnvironmentObject var store: Store
+    @EnvironmentObject var slider: DoubleSlider
+    @EnvironmentObject var detector: Detector
+    
+    @State var framerate = "" // TODO: remove
     var body: some View {
         TabView {
             VStack {
                 Text(String(format: "%.2f Gy/hr", detector.lastValue))
                     .font(.system(.title))
-                GraphView(slider: slider)
+                GraphView()
                 Spacer().frame(height: 40)
-                SliderView(slider: slider)
+                SliderView()
                 StatisticArray()
             }
             .tabItem {
@@ -27,44 +30,9 @@ struct ContentView: View {
             }
             
             VStack {
-                //Image()
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 5)
-                        .foregroundColor(Color(white: 0.13))
-                        .frame(height: 24)
-                    HStack {
-                        Text(detector.stateDesc)
-                            .font(.system(.body, design: .monospaced))
-                            .padding(.leading, 10)
-                        Spacer()
-                    }
-                }
-                
-                FrameView()
-                    .border(Color(white: 0.47), width: 2)
-                
-                HStack {
-                    Form {
-                        Toggle("Record", isOn: $detector.measuring)
-                            .toggleStyle(SwitchToggleStyle())
-                        
-                        HStack{
-                            // TODO: Implement framerate message sending in Detector.ins
-                            TextField(text: $framerate, prompt: Text("Framerate (Hz)")) {
-                                Text("Framerate (Hz)")
-                            }
-                            .keyboardType(.numberPad)
-                            .onReceive(Just(framerate)) { newValue in
-                                let filtered = newValue.filter { "0123456789.".contains($0) }
-                                if filtered != newValue {
-                                    self.framerate = filtered
-                                }
-                            }
-                        }
-                    }
-                    
-                    .frame(width: 500, height: 200, alignment: .leading)
-                }
+                StatusView()
+                FrameView().border(Color(white: 0.47), width: 2)
+                MeasurementSettingsView()
             }
             
             .preferredColorScheme(.dark)
@@ -73,7 +41,7 @@ struct ContentView: View {
             }
             
             
-            SettingsView(saved: Saved.ins)
+            SettingsView()
                 .tabItem {
                     Label("Settings", systemImage: "gear")
                 }

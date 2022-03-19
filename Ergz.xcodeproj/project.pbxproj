@@ -11,7 +11,7 @@
 		03421F852673952B00178BDB /* LinesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03421F842673952B00178BDB /* LinesView.swift */; };
 		03421F872679971F00178BDB /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03421F862679971F00178BDB /* Utilities.swift */; };
 		03421F89267A0E0F00178BDB /* Detector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03421F88267A0E0F00178BDB /* Detector.swift */; };
-		03670B0A26666C85006C7408 /* DoubleSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03670B0926666C85006C7408 /* DoubleSlider.swift */; };
+		03670B0A26666C85006C7408 /* SliderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03670B0926666C85006C7408 /* SliderView.swift */; };
 		036B3F5C269BFE390022729D /* FrameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 036B3F5B269BFE390022729D /* FrameView.swift */; };
 		037DAA1826B396E7004A7E7C /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 037DAA1726B396E7004A7E7C /* SplashView.swift */; };
 		03896030264F10F1008FC4AF /* Inspiration_4_SandboxApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0389602F264F10F1008FC4AF /* Inspiration_4_SandboxApp.swift */; };
@@ -29,7 +29,9 @@
 		03AE744F27371685009366B7 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03AE744E27371685009366B7 /* SettingsView.swift */; };
 		03AE7451273A492B009366B7 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03AE7450273A492B009366B7 /* Config.swift */; };
 		03C5DFAE27E2979800FB3F7C /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 03C5DFAD27E2979800FB3F7C /* ZIPFoundation */; };
-		03C5DFB027E30BE000FB3F7C /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C5DFAF27E30BE000FB3F7C /* Environment.swift */; };
+		03C5DFB027E30BE000FB3F7C /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C5DFAF27E30BE000FB3F7C /* Store.swift */; };
+		03C5DFB327E31E3000FB3F7C /* StatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C5DFB227E31E3000FB3F7C /* StatusView.swift */; };
+		03C5DFB527E31F1400FB3F7C /* MeasurementSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C5DFB427E31F1400FB3F7C /* MeasurementSettingsView.swift */; };
 		03CD116B2712BE8200BF89B5 /* DialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03CD116A2712BE8200BF89B5 /* DialView.swift */; };
 		03D133D827E106B800CF971C /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 03D133D727E106B800CF971C /* GRDB */; };
 /* End PBXBuildFile section */
@@ -40,7 +42,7 @@
 		03421F842673952B00178BDB /* LinesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LinesView.swift; sourceTree = "<group>"; };
 		03421F862679971F00178BDB /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 		03421F88267A0E0F00178BDB /* Detector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Detector.swift; sourceTree = "<group>"; };
-		03670B0926666C85006C7408 /* DoubleSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoubleSlider.swift; sourceTree = "<group>"; };
+		03670B0926666C85006C7408 /* SliderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SliderView.swift; sourceTree = "<group>"; };
 		036B3F5B269BFE390022729D /* FrameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameView.swift; sourceTree = "<group>"; };
 		037DAA1726B396E7004A7E7C /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		0389602C264F10F1008FC4AF /* Ergz.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Ergz.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -59,7 +61,9 @@
 		03AE744C2733924E009366B7 /* test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = test.swift; sourceTree = "<group>"; };
 		03AE744E27371685009366B7 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		03AE7450273A492B009366B7 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
-		03C5DFAF27E30BE000FB3F7C /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
+		03C5DFAF27E30BE000FB3F7C /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
+		03C5DFB227E31E3000FB3F7C /* StatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusView.swift; sourceTree = "<group>"; };
+		03C5DFB427E31F1400FB3F7C /* MeasurementSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementSettingsView.swift; sourceTree = "<group>"; };
 		03CD116A2712BE8200BF89B5 /* DialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DialView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -100,10 +104,8 @@
 				0337464C26B59536001D4E77 /* Ergz.entitlements */,
 				0389602F264F10F1008FC4AF /* Inspiration_4_SandboxApp.swift */,
 				03AE744C2733924E009366B7 /* test.swift */,
-				03421F88267A0E0F00178BDB /* Detector.swift */,
 				03421F862679971F00178BDB /* Utilities.swift */,
-				03C5DFAF27E30BE000FB3F7C /* Environment.swift */,
-				03AE7450273A492B009366B7 /* Config.swift */,
+				03C5DFB127E30E2F00FB3F7C /* Environment */,
 				0389605E265BEF82008FC4AF /* Views */,
 				03896033264F10F2008FC4AF /* Assets.xcassets */,
 				03896038264F10F2008FC4AF /* Info.plist */,
@@ -128,7 +130,9 @@
 				0389605F265BF084008FC4AF /* GaugeView.swift */,
 				0389605A264F1C39008FC4AF /* NoConnection.swift */,
 				03896031264F10F1008FC4AF /* ContentView.swift */,
-				03670B0926666C85006C7408 /* DoubleSlider.swift */,
+				03670B0926666C85006C7408 /* SliderView.swift */,
+				03C5DFB427E31F1400FB3F7C /* MeasurementSettingsView.swift */,
+				03C5DFB227E31E3000FB3F7C /* StatusView.swift */,
 				03421F842673952B00178BDB /* LinesView.swift */,
 				03ABA64F268452EC00D734A0 /* IndicatorLamp.swift */,
 				03ABA651268D0FA800D734A0 /* StatisticArray.swift */,
@@ -139,6 +143,16 @@
 				03AE744E27371685009366B7 /* SettingsView.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		03C5DFB127E30E2F00FB3F7C /* Environment */ = {
+			isa = PBXGroup;
+			children = (
+				03421F88267A0E0F00178BDB /* Detector.swift */,
+				03C5DFAF27E30BE000FB3F7C /* Store.swift */,
+				03AE7450273A492B009366B7 /* Config.swift */,
+			);
+			path = Environment;
 			sourceTree = "<group>";
 		};
 		03D133D627E106B800CF971C /* Frameworks */ = {
@@ -235,14 +249,16 @@
 				03AE7451273A492B009366B7 /* Config.swift in Sources */,
 				03896060265BF084008FC4AF /* GaugeView.swift in Sources */,
 				0389605B264F1C39008FC4AF /* NoConnection.swift in Sources */,
-				03670B0A26666C85006C7408 /* DoubleSlider.swift in Sources */,
+				03670B0A26666C85006C7408 /* SliderView.swift in Sources */,
 				03ABA650268452EC00D734A0 /* IndicatorLamp.swift in Sources */,
-				03C5DFB027E30BE000FB3F7C /* Environment.swift in Sources */,
+				03C5DFB027E30BE000FB3F7C /* Store.swift in Sources */,
 				03ABA658268D82EA00D734A0 /* Statistic.swift in Sources */,
+				03C5DFB327E31E3000FB3F7C /* StatusView.swift in Sources */,
 				03896032264F10F1008FC4AF /* ContentView.swift in Sources */,
 				03896030264F10F1008FC4AF /* Inspiration_4_SandboxApp.swift in Sources */,
 				03421F872679971F00178BDB /* Utilities.swift in Sources */,
 				0389605D265BEEBD008FC4AF /* GraphView.swift in Sources */,
+				03C5DFB527E31F1400FB3F7C /* MeasurementSettingsView.swift in Sources */,
 				03421F89267A0E0F00178BDB /* Detector.swift in Sources */,
 				036B3F5C269BFE390022729D /* FrameView.swift in Sources */,
 				030C959B26B6BFC30057ACFB /* LUTs.swift in Sources */,

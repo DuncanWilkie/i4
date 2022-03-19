@@ -8,11 +8,19 @@
 import SwiftUI
 import GRDB
 
+// TODO: Wholescale app restructure; requires major rethinking of how all global state is managed, as passing data between global objects is impossible if the benefits of the new structure are to be realized. 
 @main
 struct Ergz: App {
+    @StateObject var config: Config = Config()
+    @StateObject var store: Store = Store()
     var body: some Scene {
         WindowGroup {
-            ContentView().preferredColorScheme(/*@START_MENU_TOKEN@*/.dark/*@END_MENU_TOKEN@*/)
+            ContentView()
+                .environmentObject(config)
+                .environmentObject(store)
+                .environmentObject(Detector(store: store, config: config))
+                .environmentObject(DoubleSlider(store.testTimeBounds))
+                .preferredColorScheme(/*@START_MENU_TOKEN@*/.dark/*@END_MENU_TOKEN@*/)
             
         }
     }

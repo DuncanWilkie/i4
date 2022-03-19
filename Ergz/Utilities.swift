@@ -47,19 +47,19 @@ func autoFormatter(_ toConvert: Date, _ startDate: Date, _ endDate: Date, _ date
 }
 
 extension Data { //append data object to file; found on SO
-     func append(url: URL) throws {
-         if let fileHandle = FileHandle(forWritingAtPath: url.path) {
-             defer {
-                 fileHandle.closeFile()
-             }
-             fileHandle.seekToEndOfFile()
-             fileHandle.write(self)
-         }
-         else {
-             try write(to: url, options: .atomic)
-         }
-     }
- }
+    func append(url: URL) throws {
+        if let fileHandle = FileHandle(forWritingAtPath: url.path) {
+            defer {
+                fileHandle.closeFile()
+            }
+            fileHandle.seekToEndOfFile()
+            fileHandle.write(self)
+        }
+        else {
+            try write(to: url, options: .atomic)
+        }
+    }
+}
 
 extension Data {
     func chunked(into size: Int) -> [[Element]] {
@@ -77,11 +77,100 @@ extension Array {
     }
 }
 
+struct PointReport {
+    var points: [(Date, Double)]
+    var max: Double
+    var min: Double
+    var height: Double
+    var width: Double
+}
+
+func getPoints(store: Store, startDate: Date, endDate: Date, density: Int, toUpdate: Bool) -> PointReport {
+    if toUpdate {
+        
+        //some useful constants
+        let length = endDate.timeIntervalSince(startDate) //in seconds
+        let delta = length / Double(density)
+        
+        //creating list of partition information to be iterated over in query preparation
+        var partitions: [(Date, (Date, Date))] = [] //(center, (start, end))
+        for i in 1...density {
+            let center = startDate + (Double(i) + 0.5) * delta
+            let begin = startDate + Double(i) * delta
+            let end = startDate + Double(i + 1) * delta
+            
+            partitions.append((center, (begin, end)))
+        }
+        
+        
+        
+        //query preparation
+        var query: String = "SELECT AVG(DEPOSITION / EXPOSURE) AS AVG,  CASE "
+        for (date, range) in partitions {
+            query += "WHEN JULIANDAY(DATE) - JULIANDAY('\(toSQL(range.0))') >= 0 AND JULIANDAY('\(toSQL(range.1))') - JULIANDAY(DATE) >= 0 THEN '\(toSQL(date))' "
+        }
+        query += "END AS DATE_MID "
+        
+        query += """
+            FROM TESTRECORD WHERE
+                JULIANDAY(DATE) - JULIANDAY('\(toSQL(startDate))') >= 0
+                AND JULIANDAY('\(toSQL(endDate))') - JULIANDAY(DATE) >= 0
+                AND DATE_MID IS NOT NULL
+            GROUP BY
+                DATE_MID;
+            """
+        
+        //executing query
+        let dbQ = store.queue
+        var result: [Row] = []
+        do {
+            result = try dbQ.read { db in
+                try Row.fetchAll(db, sql:query) //can't be Measurement
+            }
+            
+        } catch {
+            print(error)
+        }
+        //setting parameters needed for autoranging
+        var max: Double = 0
+        var min: Double = 1e40
+        var sum: Double = 0
+        for i in result {
+            let c: Double = i["AVG"] //did it this way to avoid typecast hell
+            
+            sum += c
+            if c > max {
+                max = c
+            }
+            if c < min {
+                min = c
+            }
+        }
+
+        
+        var points: [(Date, Double)] = []
+        //building data array of the correct format
+        for i in result {
+            points.append((i["DATE_MID"], i["AVG"]))
+        }
+        
+        return PointReport(points: points, max: max, min: min, height: max - min, width: length)
+        
+        
+    } else {
+        return PointReport(points: [], max: -1, min: 1, height: -1, width: -1)
+    }
+}
+
+
+
 
 //Extracts data points to be graphed from the database and computes the necessary autoranging parameters.
 //Also very messily avoids rerunning the intensive initializer during ObservedObject updates via a
 //boolean init parameter. Should refactor, probably won't--no control flow in view bodies complicates things.
-class CollectionWindow {
+//this also should be a function, not a class--once again, no control flow makes conditional evaluation when slider is released
+//hard.
+/* class CollectionWindow {
     var startDate: Date
     var endDate: Date
     var density: Int //how many points to sample over
@@ -110,7 +199,7 @@ class CollectionWindow {
                 partitions.append((center, (begin, end)))
             }
             
-
+            
             
             //query preparation
             var query: String = "SELECT AVG(DEPOSITION / EXPOSURE) AS AVG,  CASE "
@@ -129,13 +218,13 @@ class CollectionWindow {
                 """
             
             //executing query
-            let dbQ = Scope.db.queue
+            let dbQ = Store.db.queue
             var result: [Row] = []
             do {
                 result = try dbQ.read { db in
                     try Row.fetchAll(db, sql:query) //can't be Measurement
                 }
-            
+                
             } catch {
                 print(error)
             }
@@ -197,8 +286,8 @@ class TestWindow {
                 partitions.append((center, (begin, end)))
             }
             
-    
-
+            
+            
             //query preparation
             var query: String = "SELECT AVG(DEPOSITION / EXPOSURE) AS AVG,  CASE "
             for (date, range) in partitions {
@@ -216,13 +305,13 @@ class TestWindow {
                 """
             
             //executing query
-            let dbQ = Scope.db.queue
+            let dbQ = Store.db.queue
             var result: [Row] = []
             do {
                 result = try dbQ.read { db in
                     try Row.fetchAll(db, sql:query) //can't be Measurement
                 }
-            
+                
             } catch {
                 print(error)
             }
@@ -254,3 +343,4 @@ class TestWindow {
         }
     }
 }
+*/

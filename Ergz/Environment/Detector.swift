@@ -84,11 +84,11 @@ func decodePixel(data: Data) -> Pixel {
     return Pixel(coords: PixelCoords(x: x, y: y), data: PixelData(tot: tot, toa: toa, ftoa: ftoa))
 }
                          
-func calibratedFrame(uncalibrated: Frame, detectorID: String) -> CalibratedFrame {
+func calibratedFrame(uncalibrated: Frame, detectorID: String, config: Config) -> CalibratedFrame {
     var calibrated: CalibratedFrame = [:]
     for (coords, pixData) in uncalibrated {
         let tot = Double(Float16(bitPattern: pixData.tot))
-        let pixcal = Saved.ins.detectors.first{$0.id == detectorID}!.cal[coords]!
+        let pixcal = config.detectors.first{$0.id == detectorID}!.cal[coords]!
         let b = tot + pixcal.a * pixcal.t - pixcal.b
         let sq = pow(pixcal.b - pixcal.a * pixcal.t - tot, 2)
         let ac = 4 * pixcal.a * (tot * pixcal.t - pixcal.b * pixcal.t - pixcal.c)
@@ -101,8 +101,9 @@ func calibratedFrame(uncalibrated: Frame, detectorID: String) -> CalibratedFrame
     
 }
 
-
 class Detector: NSObject, StreamDelegate, ObservableObject {
+    var store: Store
+    var config: Config
     var session: EASession?
     var manager = EAAccessoryManager.shared()
     var nc = NotificationCenter.default
@@ -117,7 +118,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
                 session?.outputStream?.write(startMeas, maxLength: 1)
                 stateDesc = "Measuring: "
                 if !measuring { // files in the raw dump to iCloud are named by timestamp at the start of observation
-                    url = Store.db.icloudURL?.appendingPathComponent(fm.string(from: Date()))
+                    url = store.icloudURL?.appendingPathComponent(fm.string(from: Date())) // TODO: fix error
                 }
             }
         }
@@ -137,13 +138,15 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
     @Published var isConnected: Bool = false
     @Published var lastFrame: CalibratedFrame = [:]
     @Published var lastValue: Double = 0.0
-    @Published var temperature: Double = 0.0
+    @Published var framerate: String = "" // TODO: should this be published?
     @Published var stateDesc = "Initializing..."
     var bytesRead = 0
     
-    static var ins = Detector()
+   
     
-    private override init() {
+    init(store: Store, config: Config) {
+        self.store = store
+        self.config = config
         fm.locale = Locale(identifier: "en_US_POSIX")
         fm.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
         fm.timeZone = TimeZone(secondsFromGMT: 0)
@@ -217,7 +220,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
                 temp.deallocate()
                 
                 //append raw stream data to iCloud file TODO: backup GRDB FrameRecord instead
-                let defaultUrl = Store.db.icloudURL!.appendingPathComponent("rawdump")
+                let defaultUrl = store.icloudURL!.appendingPathComponent("rawdump")
                 DispatchQueue.global(qos: .utility).async {
                     if FileManager.default.fileExists(atPath: (self.url ?? defaultUrl).path) {
                         if let fileHandle = try? FileHandle(forWritingTo: (self.url ?? defaultUrl)) {
@@ -274,7 +277,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
                         //print(String("nPixels: " + String(byte)))
                         if preparingTpxPacket.nPixels == 0 { // nullary packets are sent after frame's end; write out & reset here
                             
-                            lastFrame = calibratedFrame(uncalibrated: preparingFrame, detectorID: Saved.ins.selected)
+                            lastFrame = calibratedFrame(uncalibrated: preparingFrame, detectorID: config.selected, config: config)
                             
                             stateDesc = "Measuring: frame ID \(preparingTpxPacket.frameID) received"
                             let totalled = lastFrame.reduce(0.0, {x, y in x + y.1})
@@ -283,8 +286,8 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
                             let mass = volume * density // g
                             lastValue = totalled / (mass * 6.24e12) // calculation following doi:10.1088/1742-6596/396/2/022023
                             let date = Date()
-                            try? Store.db.write(Measurement(date: date, exposure: 0.2, deposition: totalled, dose: lastValue)) // TODO: Change exposure time to 1 / framerate
-                            try? Store.db.write(FrameRecord(date: date, detector: Saved.ins.selected, frame: preparingFrame))
+                            try? store.write(Measurement(date: date, exposure: 0.2, deposition: totalled, dose: lastValue)) // TODO: Change exposure time to 1 / framerate
+                            try? store.write(FrameRecord(date: date, detector: config.selected, frame: preparingFrame))
                             parseStage = .head
                             preparingFrame = [:]
                             
@@ -297,7 +300,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
                         parseStage = .pixelData
                         
                     case .pixelData:
-                        //print(pixelsRead) 
+                        //print(pixelsRead)
                         if subIndex == 0 {
                             preparingTpxPacket.pixelData.append([byte])
                             subIndex += 1
@@ -344,3 +347,5 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
         }
     }
 }
+
+

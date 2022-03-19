@@ -201,7 +201,7 @@ struct SliderHandleView: View {
 }
 
 struct SliderView: View {
-    @ObservedObject var slider: DoubleSlider
+    @EnvironmentObject var slider: DoubleSlider
     
     var body: some View {
         ZStack {

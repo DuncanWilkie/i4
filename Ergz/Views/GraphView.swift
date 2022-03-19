@@ -10,20 +10,27 @@ import SwiftUI
 
 
 struct GraphView: View {
-    @ObservedObject var slider: DoubleSlider
+    @EnvironmentObject var store: Store
+    @EnvironmentObject var slider: DoubleSlider
     var body: some View {
         let startDate =
             Date(timeIntervalSinceReferenceDate: slider.lowHandle.currentValue)
         let endDate =
             Date(timeIntervalSinceReferenceDate: slider.highHandle.currentValue)
         
-        let window = TestWindow(startDate: startDate,
+       /* let window = TestWindow(startDate: startDate,
                                 endDate: endDate,
                                 density: 100,
                                 toUpdate: !slider.lowHandle.onDrag && !slider.highHandle.onDrag
-                                )
+                                ) */
+        let points = getPoints(store: store,
+                               startDate: startDate,
+                               endDate: endDate,
+                               density: 100,
+                               toUpdate: !slider.lowHandle.onDrag && !slider.highHandle.onDrag)
         
-        LinesView(window: window)
+        LinesView(data: points, start: startDate, end: endDate)
+        
         
     }
 }
@@ -32,6 +39,8 @@ struct GraphView: View {
 
 struct GraphView_Previews: PreviewProvider {
     static var previews: some View {
-        GraphView(slider: DoubleSlider(Scope.db.timeBounds)).preferredColorScheme(/*@START_MENU_TOKEN@*/.dark/*@END_MENU_TOKEN@*/)
+        GraphView().environmentObject(DoubleSlider((Date(), Date(timeIntervalSinceReferenceDate: 0))))
+            .environmentObject(Store())
+            .preferredColorScheme(/*@START_MENU_TOKEN@*/.dark/*@END_MENU_TOKEN@*/)
     }
 }

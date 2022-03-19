@@ -9,7 +9,7 @@ import SwiftUI
 
 
 struct FrameView: View {
-    @ObservedObject var det = Detector.ins
+    @EnvironmentObject var det: Detector
     var body: some View {
         VStack {
             
@@ -21,15 +21,15 @@ struct FrameView: View {
                 return (UInt32(r * 255) << 24) | (UInt32(g * 255) << 16) | (UInt32(b * 255) << 8) | UInt32(alpha * 255)
                 
             })
-            
+            // TODO: Rework this to support new lastFrame semantics
             /*let max = det.lastFrame.max { $0 < $1 } ?? 1 // consider implementing in Detector so this only updates on new frames
-             var img = (1...65536).map { lastFrame[$0] != nil }.map { exp -> UInt32 in
+            var img = (1...65536).map { det.lastFrame[$0] != nil }.map { exp -> UInt32 in
              let alpha = exp / (max != 0 ? max : 1)
              let r = alpha * 0.247
              let g = alpha * 0.808
              let b = alpha * 0.922
              return (UInt32(r * 255) << 24) | (UInt32(g * 255) << 16) | (UInt32(b * 255) << 8) | UInt32(alpha * 255)
-             }*/
+             } */
             
             let cgImg = img.withUnsafeMutableBytes { (ptr) -> CGImage? in
                 let ctx = CGContext(
@@ -57,6 +57,6 @@ struct FrameView: View {
 
 struct Frame_Previews: PreviewProvider {
     static var previews: some View {
-        FrameView().preferredColorScheme(.dark).environmentObject(Detector.ins)
+        FrameView().preferredColorScheme(.dark).environmentObject(Detector(store: Store(), config: Config()))
     }
 }

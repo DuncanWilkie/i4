@@ -7,26 +7,37 @@
 
 import Foundation
 
-typealias PixelCalibration = (a: Double, b: Double, c: Double, t: Double)
+
+struct PixelCalibration: Hashable {
+    var a: Double
+    var b: Double
+    var c: Double
+    var t: Double
+}
 
 typealias FrameCalibration = [PixelCoords : PixelCalibration]
 
-struct DetectorData: Identifiable {
+struct DetectorData: Identifiable, Hashable {
     var id: String
     var cal: FrameCalibration
 }
 
-struct Saved { // Config singleton. Makes me sad, like always.
-    static var ins = Saved()
+class Config: ObservableObject { // Environment object for managing global user configuration 
     var base_url: URL
-    var detectors: [DetectorData] = []
-    var selected: String = ""
-    private init() {
+    @Published var detectors: [DetectorData] = []
+    @Published var selected: String = ""
+    init() {
         // read contents of directories that store detector metadata, and build a list of corresponding structs
         let appSupportDir = try! FileManager.default.url(for: .applicationSupportDirectory,
                                                          in: .userDomainMask, appropriateFor: nil, create: true)
         base_url = appSupportDir.appendingPathComponent("/detectors/")
 
+        updateDetectors()
+        
+    }
+    
+    
+    func updateDetectors() {
         do {
             if !FileManager.default.fileExists(atPath: base_url.path) {
                 try FileManager.default.createDirectory(at: base_url, withIntermediateDirectories: false, attributes: nil)
@@ -38,8 +49,7 @@ struct Saved { // Config singleton. Makes me sad, like always.
             for url in directoryContents {
                 let id = url.lastPathComponent
                 
-                let enumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: nil)
-                let paths = enumerator?.allObjects as! [String]
+                let paths = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: nil).map{$0.path}
                 
                 let apath = paths.filter{$0.contains("calib_a")}
                 let bpath = paths.filter{$0.contains("calib_b")}
@@ -65,8 +75,9 @@ struct Saved { // Config singleton. Makes me sad, like always.
                     }
                 }
                 
+                detectors.removeAll { $0.id == id }
                 detectors.append(DetectorData(id: id, cal: calibration))
-                
+
             }
         } catch {
             print(error.localizedDescription)
@@ -90,8 +101,12 @@ struct Saved { // Config singleton. Makes me sad, like always.
             try FileManager.default.copyItem(at: cfile, to: pwd.appendingPathComponent(cfile.lastPathComponent))
             try FileManager.default.copyItem(at: tfile, to: pwd.appendingPathComponent(tfile.lastPathComponent))
             
+            updateDetectors()
+            print(detectors.count)
+            print(detectors[0].id)
         } catch {
             print(error.localizedDescription)
         }
     }
 }
+

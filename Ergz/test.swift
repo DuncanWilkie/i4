@@ -316,7 +316,7 @@ func test() {
                 stateDesc = "Measuring: frame ID \(preparingTpxPacket.frameID) received"
                 lastValue = preparingFrame.reduce(0.0, {x, y in x + Double(Float16(bitPattern: y.2))})
                 print(preparingTpxPacket.frameID, lastValue, frameContains.last!)
-                //try? Scope.db.write(Measurement(date: Date(), exposure: 0.2, deposition: lastValue))
+                //try? Store.db.write(Measurement(date: Date(), exposure: 0.2, deposition: lastValue))
                 
                 parseStage = .head
                 preparingFrame = []

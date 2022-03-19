@@ -24,7 +24,7 @@
 	<dict>
 		<key>iCloud.space.chancellor.ergz</key>
 		<dict>
-			<key>NSUbiquitousContainerIsDocumentScopePublic</key>
+			<key>NSUbiquitousContainerIsDocumentStorePublic</key>
 			<true/>
 			<key>NSUbiquitousContainerName</key>
 			<string>Ergz</string>

@@ -101,7 +101,7 @@ func calibratedFrame(uncalibrated: Frame, detectorID: String, config: Config) ->
     
 }
 
-class Detector: NSObject, StreamDelegate, ObservableObject {
+class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporate detector ID from stream in stateDesc when connected but not measuring
     var store: Store
     var config: Config
     var session: EASession?
@@ -110,15 +110,15 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
     
     let fm = DateFormatter() // expensive to create, so we don't do it on every update to measuring
     var url: URL?
-    var measuring = false {
+    var measuring = false { // TODO: Make sure property wrapper not needed to set this from MeasurementSettingsView
         willSet {
+            stateDesc = newValue ? "Measuring: "  : "Connected: Ready to Measure"
             if isConnected && session?.outputStream?.hasSpaceAvailable ?? false {
                 let startMeas = UnsafeMutablePointer<UInt8>.allocate(capacity: 1)
                 startMeas[0] = newValue ? 0xcb : 0xbc
                 session?.outputStream?.write(startMeas, maxLength: 1)
-                stateDesc = "Measuring: "
                 if !measuring { // files in the raw dump to iCloud are named by timestamp at the start of observation
-                    url = store.icloudURL?.appendingPathComponent(fm.string(from: Date())) // TODO: fix error
+                    url = store.icloudURL?.appendingPathComponent(fm.string(from: Date())) // TODO: fix error <- No idea what this is lol
                 }
             }
         }
@@ -159,7 +159,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
         //actually receive EA.* messages thru NC in this Store
         self.manager.registerForLocalNotifications()
         
-        self.stateDesc = "Waiting for detector..."
+        self.stateDesc = "Disconnected."
     }
     
     
@@ -340,7 +340,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject {
                 self.session?.inputStream?.close()
                 
                 self.isConnected = false
-                self.stateDesc = "Waiting for detector..."
+                self.stateDesc = "Disconnected."
                 self.bytesRead = 0
                 
             }

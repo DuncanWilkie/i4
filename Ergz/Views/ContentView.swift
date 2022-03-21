@@ -7,7 +7,7 @@
 import SwiftUI
 import Combine
 
-
+//TODO: Search and destroy all hard-coded UI positioning values, testing on different-dimensioned platforms 
 struct ContentView: View {
     @EnvironmentObject var detector: Detector
     var body: some View {

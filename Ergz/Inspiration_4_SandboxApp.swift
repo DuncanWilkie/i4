@@ -8,7 +8,6 @@
 import SwiftUI
 import GRDB
 
-// TODO: Wholescale app restructure; requires major rethinking of how all global state is managed, as passing data between global objects is impossible if the benefits of the new structure are to be realized. 
 @main
 struct Ergz: App {
     @StateObject var config: Config = Config()
@@ -50,7 +49,7 @@ struct Measurement: Codable, FetchableRecord, PersistableRecord { //used to writ
     var dose: Double
 }
 
-struct Testrecord: Codable, FetchableRecord, PersistableRecord {
+struct Testrecord: Codable, FetchableRecord, PersistableRecord { // TODO: Delete
     var date: Date
     var exposure: Double
     var deposition: Double

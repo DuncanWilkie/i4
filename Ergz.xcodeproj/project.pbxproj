@@ -134,8 +134,8 @@
 				03ABA651268D0FA800D734A0 /* StatisticArray.swift */,
 				03ABA657268D82EA00D734A0 /* Statistic.swift */,
 				036B3F5B269BFE390022729D /* FrameView.swift */,
-				03C5DFBA27E71AD000FB3F7C /* Purgatory */,
 				03AE744E27371685009366B7 /* SettingsView.swift */,
+				03C5DFBA27E71AD000FB3F7C /* Purgatory */,
 			);
 			path = Views;
 			sourceTree = "<group>";

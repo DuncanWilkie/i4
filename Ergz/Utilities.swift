@@ -11,7 +11,7 @@ import Combine
 
 
 // for converting Swift date to SQLite time-value
-func toSQL(_ date : Date) -> String {
+func toSQL(_ date : Date) -> String { // TODO: Change to pass in formatter from Store
     let formatter = DateFormatter()
     formatter.locale = Locale(identifier: "en_US_POSIX")
     formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
@@ -21,7 +21,7 @@ func toSQL(_ date : Date) -> String {
 }
 
 //inverse of ^
-func fromSQL(_ string : String) -> Date {
+func fromSQL(_ string : String) -> Date { // TODO: Same as ^
     let formatter = DateFormatter()
     formatter.locale = Locale(identifier: "en_US_POSIX")
     formatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
@@ -44,6 +44,27 @@ func autoFormatter(_ toConvert: Date, _ startDate: Date, _ endDate: Date, _ date
         dateFormatter.setLocalizedDateFormatFromTemplate("hh:mm MMM dd")
     }
     return dateFormatter.string(from: toConvert)
+}
+
+// returns an SI-prefixed, units-included string representation of a floating-point value to a given precision.
+func autoDoubleFormatter(value: Double, unit: String, width: Int) -> String {
+    if String(value).count < width {
+        return "\(value) \(unit)"
+    }
+        
+    let prefixes = [-24: "y", -21: "z", -18: "a", -15: "f", -12: "p", -9: "n", -6: "µ", -3: "m", 0: "", 3: "k", 6: "M", 9: "G", 12: "T", 15: "P", 18: "E", 21: "Z", 24: "Y"]
+
+    do {
+        let powten = Int(log10(value))
+        print(powten)
+        let pref_pow = powten - powten % 3
+        guard let lett = prefixes[pref_pow] else { throw NSError() }
+        return "\(String(value / pow(10, Double(pref_pow))).prefix(width)) \(lett)\(unit)"
+    } catch {
+        print("No satisfactory SI Double format found; returning raw double")
+        return "\(String(value)) \(unit)"
+    }
+    
 }
 
 extension Data { //append data object to file; found on SO
@@ -105,7 +126,7 @@ func getPoints(store: Store, startDate: Date, endDate: Date, density: Int, toUpd
         
         
         //query preparation
-        // TODO: Change to avg(dose/exposure) from measurement
+        // TODO: Change to AVG(DOSE / EXPOSURE)...FROM MEASUREMENT...
         var query: String = "SELECT AVG(DEPOSITION / EXPOSURE) AS AVG,  CASE "
         for (date, range) in partitions {
             query += "WHEN JULIANDAY(DATE) - JULIANDAY('\(toSQL(range.0))') >= 0 AND JULIANDAY('\(toSQL(range.1))') - JULIANDAY(DATE) >= 0 THEN '\(toSQL(date))' "

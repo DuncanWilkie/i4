@@ -10,6 +10,7 @@ import Foundation
 import UniformTypeIdentifiers
 import ZIPFoundation
 
+// TODO: Add options to clear all local data.
 struct SettingsView: View {
     @EnvironmentObject var store: Store
     @EnvironmentObject var detector: Detector
@@ -149,7 +150,7 @@ struct SettingsView: View {
                     }
                 }
                 
-                Section(header: Text("Sync")) {
+                Section(header: Text("Sync")) { // TODO: Implement
                     Text("iCloud Toggle")
                     Text("Rsync?")
                     Text("git?")

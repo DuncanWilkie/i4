@@ -17,10 +17,9 @@ struct Statistic: View {
     var body: some View {
         ZStack {
             VStack(alignment: .leading) {
-                HStack {
-                    Text(String(value).prefix(10))
-                    Text(unit)
-                }
+                Text(autoDoubleFormatter(value: value, unit: unit, width: 6))
+                    
+                
                 Text(label)
                     .font(.system(size: 14))
                     .foregroundColor(.gray)

@@ -18,18 +18,13 @@ struct GraphView: View {
         let endDate =
             Date(timeIntervalSinceReferenceDate: slider.highHandle.currentValue)
         
-       /* let window = TestWindow(startDate: startDate,
-                                endDate: endDate,
-                                density: 100,
-                                toUpdate: !slider.lowHandle.onDrag && !slider.highHandle.onDrag
-                                ) */
         let points = getPoints(store: store,
                                startDate: startDate,
                                endDate: endDate,
                                density: 100,
                                toUpdate: !slider.lowHandle.onDrag && !slider.highHandle.onDrag)
         
-        LinesView(data: points, start: startDate, end: endDate)
+        LinesView(data: points, start: startDate, end: endDate) // TODO: Validate LinesView for correctness
         
         
     }

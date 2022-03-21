@@ -8,7 +8,7 @@
 import Foundation
 import GRDB
 
-// TODO: Move all expensive-to-initialize items here, e.g. the DateFormatter() defined in detector, 
+// TODO: Move all expensive-to-initialize items here, e.g. the DateFormatter() defined in detector
 class Store: ObservableObject { // Environment object for managing databases and remote syncing
     var queue: DatabaseQueue
     @Published var timeBounds: (Date, Date) = (Date(), Date(timeIntervalSinceReferenceDate: 0))
@@ -68,7 +68,8 @@ class Store: ObservableObject { // Environment object for managing databases and
                 }
             }
             
-            try dbQueue.write {  db in // TODO: Remove start
+            // TODO: Remove start
+            try dbQueue.write {  db in
                // try db.drop(table: "TESTRECORD")
                 try db.create(table: "TESTRECORD", ifNotExists: true) { t in
                     t.autoIncrementedPrimaryKey("ID")

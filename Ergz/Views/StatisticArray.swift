@@ -9,7 +9,7 @@ import SwiftUI
 import GRDB
 
 func gatherStats(store: Store, startDate: Date, endDate: Date) -> (Double, Double, Double, Double) {
-    // TODO: Debug (should work on Testrecord)
+    // TODO: Debug (should work on Testrecord); currently no date filtering so...SQL
     var ret: (Double, Double, Double, Double) = (0, 0, 0, 0)
     do {
         try store.queue.read {db in

@@ -9,12 +9,7 @@ import Combine
 
 
 struct ContentView: View {
-    @EnvironmentObject var config: Config
-    @EnvironmentObject var store: Store
-    @EnvironmentObject var slider: DoubleSlider
     @EnvironmentObject var detector: Detector
-    
-    @State var framerate = "" // TODO: remove
     var body: some View {
         TabView {
             VStack {

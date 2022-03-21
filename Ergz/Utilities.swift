@@ -105,6 +105,7 @@ func getPoints(store: Store, startDate: Date, endDate: Date, density: Int, toUpd
         
         
         //query preparation
+        // TODO: Change to avg(dose/exposure) from measurement
         var query: String = "SELECT AVG(DEPOSITION / EXPOSURE) AS AVG,  CASE "
         for (date, range) in partitions {
             query += "WHEN JULIANDAY(DATE) - JULIANDAY('\(toSQL(range.0))') >= 0 AND JULIANDAY('\(toSQL(range.1))') - JULIANDAY(DATE) >= 0 THEN '\(toSQL(date))' "

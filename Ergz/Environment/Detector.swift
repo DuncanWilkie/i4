@@ -60,7 +60,7 @@ enum parseStage {
 
 // translation of the wonderfully-named convert_packet() function from ADVACAM.
 // colShiftNum is always 4 in their code, and for now we only need ToA/ToT tpx_mode.
-func decodePixel(data: Data) -> Pixel {
+func decodePixel(data: Data) -> Pixel { // byte-for-byte identical to Advacam's Python script on several inputs.
     guard data.count == 6 else {
         print("\(data.count) bytes passed to processPixel; expected 6")
         return Pixel(coords: PixelCoords(x: 0, y: 0), data: PixelData(tot: 0, toa: 0, ftoa: 0))
@@ -84,7 +84,7 @@ func decodePixel(data: Data) -> Pixel {
     return Pixel(coords: PixelCoords(x: x, y: y), data: PixelData(tot: tot, toa: toa, ftoa: ftoa))
 }
                          
-func calibratedFrame(uncalibrated: Frame, detectorID: String, config: Config) -> CalibratedFrame {
+func calibratedFrame(uncalibrated: Frame, detectorID: String, config: Config) -> CalibratedFrame { // TODO: Validate this conversion
     var calibrated: CalibratedFrame = [:]
     for (coords, pixData) in uncalibrated {
         let tot = Double(Float16(bitPattern: pixData.tot))

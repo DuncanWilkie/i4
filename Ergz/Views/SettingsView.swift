@@ -48,13 +48,17 @@ struct SettingsView: View {
                     Button(action: { exportRaw.toggle() }, label: {
                         Text("Raw Frames")
                     }).sheet(isPresented: $exportRaw, onDismiss: {
-                        // SQL select statement of FrameRecord database from $selectedStart and $selectedEnd; create .zip, use fileExporter so user can save it wherever
                         if archive_name == "" {
                             archive_name = "export.zip"
                         }
+                        
                         do {
                             let result: [FrameRecord] = try store.queue.read { db in
                                 try FrameRecord.fetchAll(db, sql:"SELECT * FROM FRAMERECORD WHERE DATE >= JULIANDAY('\(toSQL(selectedStart))') AND DATE <= JULIANDAY('\(toSQL(selectedEnd))')")
+                            }
+                            
+                            if !FileManager.default.fileExists(atPath: archive_url.path) {
+                                try FileManager.default.createDirectory(at: archive_url, withIntermediateDirectories: false, attributes: nil)
                             }
                             
                             if FileManager.default.fileExists(atPath: archive_url.appendingPathComponent(archive_name).path) {
@@ -97,6 +101,10 @@ struct SettingsView: View {
                         do {
                             if archive_name == "" {
                                 archive_name = "export.zip"
+                            }
+                            
+                            if !FileManager.default.fileExists(atPath: archive_url.path) {
+                                try FileManager.default.createDirectory(at: archive_url, withIntermediateDirectories: false, attributes: nil)
                             }
                             
                             let result: [Measurement] = try store.queue.read { db in
@@ -149,14 +157,7 @@ struct SettingsView: View {
                 
             }.navigationTitle("Settings")
             .padding()
-            .fileMover(isPresented: $exporting, file: archive_url.appendingPathComponent(archive_name)) { result in
-                if FileManager.default.fileExists(atPath: archive_url.appendingPathComponent(archive_name).path) {
-                    try? FileManager.default.removeItem(at: archive_url.appendingPathComponent(archive_name))
-                }
-                exporting = false
-                archive_name = ""
-                //try? print(FileManager.default.contentsOfDirectory(atPath: archive_url.path))
-            }
+            
             .fileImporter(
                 isPresented: $importing,
                 allowedContentTypes: [.plainText],
@@ -190,6 +191,14 @@ struct SettingsView: View {
                     print("returned early at \(#line) in \(#file)")
                     return
                 }
+            }
+            .fileMover(isPresented: $exporting, file: archive_url.appendingPathComponent(archive_name)) { result in
+                if FileManager.default.fileExists(atPath: archive_url.appendingPathComponent(archive_name).path) {
+                    try? FileManager.default.removeItem(at: archive_url.appendingPathComponent(archive_name))
+                }
+                exporting = false
+                archive_name = ""
+                //try? print(FileManager.default.contentsOfDirectory(atPath: archive_url.path))
             }
         }.navigationViewStyle(StackNavigationViewStyle())
     }

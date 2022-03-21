@@ -17,7 +17,7 @@ struct MeasurementSettingsView: View {
                     .toggleStyle(SwitchToggleStyle())
                 
                 HStack{
-                    // TODO: Implement framerate message sending in Detector
+                    // TODO: Implement framerate message sending in Detector or scrap this
                     TextField(text: $detector.framerate, prompt: Text("Framerate (Hz)")) {
                         Text("Framerate (Hz)")
                     }

@@ -18,8 +18,6 @@ import Compression
 //We have an *object that exclusively manages global state*. I shouldn't have to stress how uncomfortable that is
 //from a functional programming perspective. Singletons are unequivocally an antipattern...
 
-
-
 struct TpxPacket: Equatable {
     var frameID: UInt16
     var packetID: UInt16
@@ -83,7 +81,7 @@ func decodePixel(data: Data) -> Pixel { // byte-for-byte identical to Advacam's 
     
     return Pixel(coords: PixelCoords(x: x, y: y), data: PixelData(tot: tot, toa: toa, ftoa: ftoa))
 }
-                         
+
 func calibratedFrame(uncalibrated: Frame, detectorID: String, config: Config) -> CalibratedFrame { // TODO: Validate this conversion
     var calibrated: CalibratedFrame = [:]
     for (coords, pixData) in uncalibrated {
@@ -93,7 +91,7 @@ func calibratedFrame(uncalibrated: Frame, detectorID: String, config: Config) ->
         let sq = pow(pixcal.b - pixcal.a * pixcal.t - tot, 2)
         let ac = 4 * pixcal.a * (tot * pixcal.t - pixcal.b * pixcal.t - pixcal.c)
         let energy = (b + sqrt(sq - ac)) / (2 * pixcal.a) // calculation following doi:10.1088/1742-6596/396/2/022023
-                                                          // notably, the inversion of the TOT(Energy) formula given is not unique; I've taken the positive branch here.
+        // notably, the inversion of the TOT(Energy) formula given is not unique; I've taken the positive branch here.
         calibrated[coords] = Double(energy)
     }
     
@@ -109,7 +107,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
     var nc = NotificationCenter.default
     // Validation so far: the parsing as appearing below produces identical results to ADVACAM's Python script
     // that serves the same purpose.
-  
+    
     var url: URL?
     var measuring = false { // TODO: Make sure property wrapper not needed to set this from MeasurementSettingsView
         willSet {
@@ -118,9 +116,6 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
                 let startMeas = UnsafeMutablePointer<UInt8>.allocate(capacity: 1)
                 startMeas[0] = newValue ? 0xcb : 0xbc
                 session?.outputStream?.write(startMeas, maxLength: 1)
-                /*if !measuring { // files in the raw dump to iCloud are named by timestamp at the start of observation
-                    url = store.icloudURL?.appendingPathComponent(store.fm.string(from: Date())) // TODO: fix error <- No idea what this is lol
-                } */
             }
         }
     }
@@ -143,12 +138,12 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
     @Published var stateDesc = "Initializing..."
     var bytesRead = 0
     
-   
+    
     
     init(store: Store, config: Config) {
         self.store = store
         self.config = config
-
+        
         
         super.init() //NSObject init
         
@@ -179,11 +174,11 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
         }
         
         
-        let input =  self.session!.inputStream
+        let input =  self.session!.inputStream! // If we get here and these are nil, there's something really wrong with the detector.
         let output = self.session!.outputStream!
-        input?.delegate = self
-        input?.schedule(in: .current, forMode: .common)
-        input?.open()
+        input.delegate = self
+        input.schedule(in: .current, forMode: .common)
+        input.open()
         
         output.delegate = self
         output.schedule(in: .current, forMode: .common)
@@ -193,7 +188,6 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
     }
     
     func stream(_ aStream: Stream, handle eventCode: Stream.Event) {
-        
         switch eventCode {
         case Stream.Event.hasBytesAvailable:
             self.handlePacket(stream: aStream as! InputStream)
@@ -204,11 +198,9 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
         default:
             print("Unrecognized stream event")
         }
-        
     }
     
     private func handlePacket(stream: InputStream) {
-        print("packet received")
         if isConnected {
             while stream.hasBytesAvailable {
                 let temp = UnsafeMutablePointer<UInt8>.allocate(capacity: 512)
@@ -218,26 +210,9 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
                 let buffer = Data(buffer: UnsafeMutableBufferPointer<UInt8>(start: temp, count: 512))
                 temp.deallocate()
                 
-                /*//append raw stream data to iCloud file TODO: backup GRDB FrameRecord instead; uncomment this for hand-debugging
-                let defaultUrl = store.icloudURL!.appendingPathComponent("rawdump")
-                DispatchQueue.global(qos: .utility).async {
-                    if FileManager.default.fileExists(atPath: (self.url ?? defaultUrl).path) {
-                        if let fileHandle = try? FileHandle(forWritingTo: (self.url ?? defaultUrl)) {
-                            fileHandle.seekToEndOfFile()
-                            fileHandle.write(buffer)
-                            fileHandle.closeFile()
-                        }
-                    } else {
-                        try? buffer.write(to: (self.url ?? defaultUrl), options: .atomicWrite)
-                    }
-                } */
-                
                 bytesRead += buffer.count
                 
                 for byte in buffer { // parse the stream for TPX packets & frames, writing to all expecting sources
-                    
-                    //if parseStage != .pixelData {print(parseStage)}
-                    
                     switch (parseStage) {
                     case .head:
                         if byte == 0x14 {
@@ -250,7 +225,6 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
                             subIndex += 1
                         } else if subIndex == 1 {
                             preparingTpxPacket.frameID |= UInt16(byte) << 8
-                            //print("frameID: " + String(format: "%02X", preparingTpxPacket.frameID))
                             subIndex = 0
                             parseStage = .packetID
                         }
@@ -263,17 +237,14 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
                             preparingTpxPacket.packetID |= UInt16(byte) << 8
                             subIndex = 0
                             parseStage = .mode
-                            //print("packetID: " + String(format: "%02X", preparingTpxPacket.packetID))
                         }
                         
                     case .mode:
                         preparingTpxPacket.mode = byte
                         parseStage = .nPixels
-                        //print("mode: " + String(format: "%02X", preparingTpxPacket.mode))
                         
                     case .nPixels:
                         preparingTpxPacket.nPixels = byte
-                        //print(String("nPixels: " + String(byte)))
                         if preparingTpxPacket.nPixels == 0 { // nullary packets are sent after frame's end; write out & reset here
                             // TODO: Should this be asynchronous? How long does it take to add a FrameRecord to the database?
                             lastFrame = calibratedFrame(uncalibrated: preparingFrame, detectorID: config.selected, config: config)

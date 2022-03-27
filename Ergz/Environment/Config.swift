@@ -52,7 +52,6 @@ class Config: ObservableObject { // Environment object for managing global user 
             print(directoryContents)
             for url in directoryContents {
                 let id = url.lastPathComponent
-                // print(id)
                 
                 let paths = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: nil).map{$0.path}
                 
@@ -107,10 +106,6 @@ class Config: ObservableObject { // Environment object for managing global user 
             try FileManager.default.copyItem(at: bfile, to: pwd.appendingPathComponent(bfile.lastPathComponent))
             try FileManager.default.copyItem(at: cfile, to: pwd.appendingPathComponent(cfile.lastPathComponent))
             try FileManager.default.copyItem(at: tfile, to: pwd.appendingPathComponent(tfile.lastPathComponent))
-            
-            
-            // print(detectors.count)
-            // print(detectors[0].id)
         } catch {
             print(error.localizedDescription)
         }

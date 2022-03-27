@@ -31,7 +31,6 @@ struct MeasurementSettingsView: View {
                     }
                 }
             }
-            
             .frame(width: 500, height: 200, alignment: .leading)
             .padding()
         }

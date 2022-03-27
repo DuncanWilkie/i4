@@ -10,7 +10,6 @@ import Foundation
 import UniformTypeIdentifiers
 import ZIPFoundation
 
-// TODO: Add options to clear all local data.
 struct SettingsView: View {
     @EnvironmentObject var store: Store
     @EnvironmentObject var detector: Detector

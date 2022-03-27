@@ -11,7 +11,7 @@ import SwiftUI
 
 struct GraphView: View {
     @EnvironmentObject var store: Store
-    @EnvironmentObject var slider: DoubleSlider
+    @ObservedObject var slider: DoubleSlider
     @ViewBuilder var body: some View {
         let startDate =
         Date(timeIntervalSinceReferenceDate: slider.lowHandle.currentValue)
@@ -37,10 +37,7 @@ struct GraphView: View {
                             .frame(width: reader.size.width, height: reader.size.height)
                 }
             }
-        }
-        // TODO: Validate LinesView
-        
-        
+        } 
     }
 }
 
@@ -48,7 +45,7 @@ struct GraphView: View {
 
 struct GraphView_Previews: PreviewProvider {
     static var previews: some View {
-        GraphView().environmentObject(DoubleSlider((Date(), Date(timeIntervalSinceReferenceDate: 0))))
+        GraphView(slider: DoubleSlider((Date(), Date(timeIntervalSinceReferenceDate: 0))))
             .environmentObject(Store())
             .preferredColorScheme(/*@START_MENU_TOKEN@*/.dark/*@END_MENU_TOKEN@*/)
     }

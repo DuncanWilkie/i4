@@ -51,7 +51,7 @@ class SliderHandle: ObservableObject {
         }
     }
     @Published var currentLocation: CGPoint
-        
+    
     init(sliderWidth: CGFloat, sliderHeight: CGFloat, sliderValueStart: Double, sliderValueEnd: Double, startPercentage: SliderValue) {
         self.sliderWidth = sliderWidth
         self.sliderHeight = sliderHeight
@@ -108,7 +108,7 @@ class SliderHandle: ObservableObject {
 class DoubleSlider: ObservableObject {
     
     //Slider Size
-    final let width: CGFloat = 350 // TODO: make dynamic, read in from GeometryReader
+    final let width: CGFloat = 350
     final let lineWidth: CGFloat = 8
     
     //Slider value range from valueStart to valueEnd
@@ -122,7 +122,7 @@ class DoubleSlider: ObservableObject {
     //Handle start percentage (also for starting point)
     @SliderValue var highHandleStartPercentage = 1.0
     @SliderValue var lowHandleStartPercentage = 0.0
-
+    
     final var anyCancellableHigh: AnyCancellable?
     final var anyCancellableLow: AnyCancellable?
     
@@ -135,14 +135,14 @@ class DoubleSlider: ObservableObject {
                                   sliderValueStart: valueStart,
                                   sliderValueEnd: valueEnd,
                                   startPercentage: _highHandleStartPercentage
-                                )
+        )
         
         lowHandle = SliderHandle(sliderWidth: width,
-                                  sliderHeight: lineWidth,
-                                  sliderValueStart: valueStart,
-                                  sliderValueEnd: valueEnd,
-                                  startPercentage: _lowHandleStartPercentage
-                                )
+                                 sliderHeight: lineWidth,
+                                 sliderValueStart: valueStart,
+                                 sliderValueEnd: valueEnd,
+                                 startPercentage: _lowHandleStartPercentage
+        )
         
         anyCancellableHigh = highHandle.objectWillChange.sink { _ in
             self.objectWillChange.send()
@@ -185,9 +185,9 @@ struct SliderHandleView: View {
             
             Text("\(autoFormatter(Date(timeIntervalSinceReferenceDate: handle.currentValue), Date(timeIntervalSinceReferenceDate: handle.sliderValueStart), Date(timeIntervalSinceReferenceDate: handle.sliderValueEnd), store.fm))"
             )
-                .foregroundColor(Color.gray)
-                .position(x: handle.currentLocation.x, y: handle.currentLocation.y - 40)
-                .opacity(handle.onDrag ? 1.0 : 0.0)
+            .foregroundColor(Color.gray)
+            .position(x: handle.currentLocation.x, y: handle.currentLocation.y - 40)
+            .opacity(handle.onDrag ? 1.0 : 0.0)
             Circle()
                 .frame(width: handle.diameter, height: handle.diameter)
                 .foregroundColor(.gray)
@@ -195,20 +195,16 @@ struct SliderHandleView: View {
                 .scaleEffect(handle.onDrag ? 1.3 : 1)
                 .contentShape(Rectangle())
                 .position(x: handle.currentLocation.x, y: handle.currentLocation.y)
-                
+            
         }
-    
     }
 }
 
 struct SliderView: View {
-    @EnvironmentObject var slider: DoubleSlider
+    @ObservedObject var slider: DoubleSlider
     
     var body: some View {
         ZStack {
-            //Color.black.opacity(slider.lowHandle.onDrag ? 0.3 : 0).ignoresSafeArea()
-            //Color.black.opacity(slider.highHandle.onDrag ? 0.3 : 0).ignoresSafeArea()
-        
             RoundedRectangle(cornerRadius: slider.lineWidth)
                 .fill(Color.gray.opacity(0.2))
                 .frame(width: slider.width, height: slider.lineWidth)
@@ -224,8 +220,7 @@ struct SliderView: View {
                         //High Handle
                         SliderHandleView(handle: slider.highHandle)
                             .highPriorityGesture(slider.highHandle.sliderDragGesture)
-                    }
-                )
+                    })
         }
     }
 }

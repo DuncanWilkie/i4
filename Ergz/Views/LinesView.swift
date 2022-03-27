@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct LinesView: View {
+struct LinesView: View { // TODO: Validate this displays an accurate graph
     var data: PointReport
     var start: Date
     var end: Date

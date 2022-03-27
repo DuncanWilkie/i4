@@ -10,15 +10,11 @@ import Combine
 // TODO: Search and destroy all hard-coded UI positioning values, testing on different-dimensioned platforms
 // TODO: Break out views into minimum possible units to avoid unnecessary updates when environment objects change
 struct ContentView: View {
-    @EnvironmentObject var detector: Detector
     var body: some View {
         TabView {
             VStack {
-                Text(String(format: "%.2f Gy/hr", detector.lastValue))
-                    .font(.system(.title))
-                GraphView()
-                Spacer().frame(height: 40)
-                SliderView()
+                DoseView()
+                UsingSlider()
                 StatisticArray()
             }
             .tabItem {
@@ -35,7 +31,6 @@ struct ContentView: View {
             .tabItem {
                 Label("Device", systemImage: "info.circle.fill")
             }
-            
             
             SettingsView()
                 .tabItem {

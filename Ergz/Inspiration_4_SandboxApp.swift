@@ -18,7 +18,6 @@ struct Ergz: App {
                 .environmentObject(config)
                 .environmentObject(store)
                 .environmentObject(Detector(store: store, config: config))
-                .environmentObject(DoubleSlider(store.timeBounds))
                 .preferredColorScheme(/*@START_MENU_TOKEN@*/.dark/*@END_MENU_TOKEN@*/)
             
         }
@@ -48,11 +47,3 @@ struct Measurement: Codable, FetchableRecord, PersistableRecord { //used to writ
     var deposition: Double
     var dose: Double
 }
-
-/* struct Testrecord: Codable, FetchableRecord, PersistableRecord { // TODO: Delete
-    var date: Date
-    var exposure: Double
-    var deposition: Double
-} */
-
-

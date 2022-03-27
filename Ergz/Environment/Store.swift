@@ -82,44 +82,6 @@ class Store: ObservableObject { // Environment object for managing databases and
                 print(error)
             }
             
-            
-            /* // TODO: Remove start
-            try dbQueue.write {  db in
-               // try db.drop(table: "TESTRECORD")
-                try db.create(table: "TESTRECORD", ifNotExists: true) { t in
-                    t.autoIncrementedPrimaryKey("ID")
-                    t.column("DATE", .text).notNull()
-                    t.column("EXPOSURE", .double).notNull()
-                    t.column("DEPOSITION", .double).notNull()
-                }
-            }
-                do {
-                    let content = try String(contentsOfFile: Bundle.main.bundlePath + "/aggregated.csv")
-                    let parsedCSV: [String] = content.components(
-                        separatedBy: "\r\n"
-                    )
-                    
-                    for i in parsedCSV.dropFirst().dropLast() {
-                        let row: [String] = i.components(separatedBy: ",")
-                        
-                        try dbQueue.write { db in
-                            try Testrecord(date: Date(timeIntervalSince1970: Double(row[1]) ?? 0),
-                                       exposure: Double(row[2]) ?? 0,
-                                       deposition: Double(row[3]) ?? 0).insert(db)
-                        }
-                        
-                    }
-                    
-                    try dbQueue.read { db in
-                        let min = Testrecord.select(min(Column("date")), as: String.self)
-                        let max = Testrecord.select(max(Column("date")), as: String.self)
-                        try testTimeBounds = (fromSQL(min.fetchOne(db)!, fm), fromSQL(max.fetchOne(db)!, fm))
-                    }
-                } catch {
-                    print("TESTRECORD not generated")
-                    print(error)
-                } // TODO: Remove end */
-            
         } catch {
             print(error)
         }

@@ -9,7 +9,7 @@ import SwiftUI
 import GRDB
 
 // The way I have to manage global state in order to get proper performance out of SwiftUI illustrates the failures of OOP.
-// In any sufficiently complex project, in order to get proper encapsulation and elegant dependency injection it becomes
+// In any sufficiently complex project, in order to get proper separation of concerns and elegant dependency injection it becomes
 // necessary to entirely divorce one's objects from the natural, object-like divisions between code, e.g the UsingSlider view.
 // If I were to totally divorce the code in Detector from dependency on Store and Config, so it could be initialized as a @StateObject
 // here, it would be wholly unrecognizable as a detector; there would either be an intolerable amount of duplicated code or one big object
@@ -37,7 +37,7 @@ struct Ergz: App {
             ContentView()
                 .environmentObject(config)
                 .environmentObject(store)
-                .environmentObject(Detector(store: store, config: config))
+                .environmentObject(Detector(store: store, config: config)) // I'm assuming this view doesn't get invalidated, so this stays constant. If it does get invalidated, self.fetalPosition(); self.cry()
                 .preferredColorScheme(/*@START_MENU_TOKEN@*/.dark/*@END_MENU_TOKEN@*/)
             
         }

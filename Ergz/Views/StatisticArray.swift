@@ -9,8 +9,7 @@ import SwiftUI
 import GRDB
 
 func gatherStats(store: Store, startDate: Date, endDate: Date) -> (Double, Double, Double, Double) {
-    // TODO: Debug (should work on Testrecord); currently no date filtering so...SQL
-   /* let query = "SELECT AVG(DEPOSITION / EXPOSURE) AS AVDEPRT, SUM(DEPOSITION) AS TOTDEP, SUM(DOSE) AS TOTDOSE, MAX(DOSE) AS PKDOSE FROM MEASUREMENT WHERE DATE >= '\(toSQL(startDate))' AND DATE <= '\(toSQL(endDate))'"
+    let query = "SELECT AVG(DEPOSITION / EXPOSURE) AS AVDEPRT, SUM(DEPOSITION) AS TOTDEP, SUM(DOSE) AS TOTDOSE, MAX(DOSE) AS PKDOSE FROM MEASUREMENT WHERE DATE >= '\(toSQL(startDate, store.fm))' AND DATE <= '\(toSQL(endDate, store.fm))'"
     var res: Row?
     do {
         res = try store.queue.read {db in
@@ -34,9 +33,9 @@ func gatherStats(store: Store, startDate: Date, endDate: Date) -> (Double, Doubl
     } else {
         print("Error in gatherStats: query returned nil")
         return (0, 0, 0, 0)
-    } */
+    }
     
-    let query = "SELECT AVG(DEPOSITION / EXPOSURE) AS AVDEPRT, SUM(DEPOSITION) AS TOTDEP FROM TESTRECORD WHERE DATE >= '\(toSQL(startDate))' AND DATE <= '\(toSQL(endDate))'"
+    /*let query = "SELECT AVG(DEPOSITION / EXPOSURE) AS AVDEPRT, SUM(DEPOSITION) AS TOTDEP FROM TESTRECORD WHERE DATE >= '\(toSQL(startDate, store.fm))' AND DATE <= '\(toSQL(endDate, store.fm))'"
     
     var res: Row?
     do {
@@ -62,7 +61,7 @@ func gatherStats(store: Store, startDate: Date, endDate: Date) -> (Double, Doubl
     } else {
         print("Error in gatherStats: query returned nil")
         return (0, 0, 0, 0)
-    }
+    } */
     
 }
 
@@ -73,7 +72,7 @@ struct StatisticArray: View {
         let stats = gatherStats(store: store,
                                 startDate: Date(timeIntervalSinceReferenceDate: slider.lowHandle.currentValue),
                                 endDate: Date(timeIntervalSinceReferenceDate: slider.highHandle.currentValue))
-        ZStack {
+        ZStack { // Would this look better with the same gray background as the Form()s?
             VStack {
                 HStack(spacing: 0) {
                     Statistic(value: stats.0, unit: "eV/s", label: "Avg. Dep. Rate")

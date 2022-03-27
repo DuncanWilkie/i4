@@ -31,13 +31,17 @@ class Config: ObservableObject { // Environment object for managing global user 
         let appSupportDir = try! FileManager.default.url(for: .applicationSupportDirectory,
                                                          in: .userDomainMask, appropriateFor: nil, create: true)
         base_url = appSupportDir.appendingPathComponent("/detectors/")
-
-        updateDetectors()
+        
+        do {
+            try updateDetectors()
+        } catch {
+            print("stored detector initialization failed: line \(#line) in \(#file)")
+        }
         
     }
     
     
-    func updateDetectors() {
+    func updateDetectors() throws {
         do {
             if !FileManager.default.fileExists(atPath: base_url.path) {
                 try FileManager.default.createDirectory(at: base_url, withIntermediateDirectories: false, attributes: nil)
@@ -45,9 +49,10 @@ class Config: ObservableObject { // Environment object for managing global user 
             
             let directoryContents = try FileManager.default.contentsOfDirectory(at: base_url,
                                                                                 includingPropertiesForKeys: nil)
-            
+            print(directoryContents)
             for url in directoryContents {
                 let id = url.lastPathComponent
+                // print(id)
                 
                 let paths = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: nil).map{$0.path}
                 
@@ -63,13 +68,15 @@ class Config: ObservableObject { // Environment object for managing global user 
                 let cfile = try String(contentsOfFile: cpath[0]).components(separatedBy: CharacterSet(charactersIn: " \n"))
                 let tfile = try String(contentsOfFile: tpath[0]).components(separatedBy: CharacterSet(charactersIn: " \n"))
                 
+                // print(afile) use something like this to test calibration file parsing
                 var calibration: FrameCalibration = [:]
                 for iy in 1...256 { // TODO: check the axes on the calibration file match what I've assumed
                     for ix in 1...256 {
-                        let pixcal = PixelCalibration(a: Double(afile[256*(iy - 1) + ix - 1])!,
-                                                      b: Double(bfile[256*(iy - 1) + ix - 1])!,
-                                                      c: Double(cfile[256*(iy - 1) + ix - 1])!,
-                                                      t: Double(tfile[256*(iy - 1) + ix - 1])!)
+                        
+                        let pixcal = PixelCalibration(a: try Double(afile[256*(iy - 1) + ix - 1]) ?? { throw NSError() }(),
+                                                      b: try Double(bfile[256*(iy - 1) + ix - 1]) ?? { throw NSError() }(),
+                                                      c: try Double(cfile[256*(iy - 1) + ix - 1]) ?? { throw NSError() }(),
+                                                      t: try Double(tfile[256*(iy - 1) + ix - 1]) ?? { throw NSError() }())
                         
                         calibration[PixelCoords(x: ix, y: iy)] = pixcal
                     }
@@ -77,15 +84,15 @@ class Config: ObservableObject { // Environment object for managing global user 
                 
                 detectors.removeAll { $0.id == id }
                 detectors.append(DetectorData(id: id, cal: calibration))
-
+                
             }
         } catch {
             print(error.localizedDescription)
         }
     }
-
     
-    func saveDetector(id: String, afile: URL, bfile: URL, cfile: URL, tfile: URL) {
+    
+    func saveDetector(id: String, afile: URL, bfile: URL, cfile: URL, tfile: URL) throws {
         do {
             let pwd = base_url.appendingPathComponent(id)
             if FileManager.default.fileExists(atPath: pwd.path) {
@@ -101,11 +108,19 @@ class Config: ObservableObject { // Environment object for managing global user 
             try FileManager.default.copyItem(at: cfile, to: pwd.appendingPathComponent(cfile.lastPathComponent))
             try FileManager.default.copyItem(at: tfile, to: pwd.appendingPathComponent(tfile.lastPathComponent))
             
-            updateDetectors()
-            print(detectors.count)
-            print(detectors[0].id)
+            
+            // print(detectors.count)
+            // print(detectors[0].id)
         } catch {
             print(error.localizedDescription)
+        }
+        
+        do {
+            try updateDetectors()
+        } catch { // undo the copy operations above, because the files were bad
+            let _ = try? FileManager.default.contentsOfDirectory(at: base_url, includingPropertiesForKeys: nil)
+                .filter { $0.lastPathComponent.contains(id) }
+                .map { try? FileManager.default.removeItem(at: $0) }
         }
     }
 }

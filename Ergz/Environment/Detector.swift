@@ -107,8 +107,9 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
     var session: EASession?
     var manager = EAAccessoryManager.shared()
     var nc = NotificationCenter.default
-    
-    let fm = DateFormatter() // expensive to create, so we don't do it on every update to measuring
+    // Validation so far: the parsing as appearing below produces identical results to ADVACAM's Python script
+    // that serves the same purpose.
+  
     var url: URL?
     var measuring = false { // TODO: Make sure property wrapper not needed to set this from MeasurementSettingsView
         willSet {
@@ -117,9 +118,9 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
                 let startMeas = UnsafeMutablePointer<UInt8>.allocate(capacity: 1)
                 startMeas[0] = newValue ? 0xcb : 0xbc
                 session?.outputStream?.write(startMeas, maxLength: 1)
-                if !measuring { // files in the raw dump to iCloud are named by timestamp at the start of observation
-                    url = store.icloudURL?.appendingPathComponent(fm.string(from: Date())) // TODO: fix error <- No idea what this is lol
-                }
+                /*if !measuring { // files in the raw dump to iCloud are named by timestamp at the start of observation
+                    url = store.icloudURL?.appendingPathComponent(store.fm.string(from: Date())) // TODO: fix error <- No idea what this is lol
+                } */
             }
         }
     }
@@ -138,7 +139,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
     @Published var isConnected: Bool = false
     @Published var lastFrame: CalibratedFrame = [:]
     @Published var lastValue: Double = 0.0
-    @Published var framerate: String = "" // TODO: should this be published?
+    @Published var framerate: String = "" // TODO: Make settable
     @Published var stateDesc = "Initializing..."
     var bytesRead = 0
     
@@ -147,9 +148,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
     init(store: Store, config: Config) {
         self.store = store
         self.config = config
-        fm.locale = Locale(identifier: "en_US_POSIX")
-        fm.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
-        fm.timeZone = TimeZone(secondsFromGMT: 0)
+
         
         super.init() //NSObject init
         
@@ -219,7 +218,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
                 let buffer = Data(buffer: UnsafeMutableBufferPointer<UInt8>(start: temp, count: 512))
                 temp.deallocate()
                 
-                //append raw stream data to iCloud file TODO: backup GRDB FrameRecord instead
+                /*//append raw stream data to iCloud file TODO: backup GRDB FrameRecord instead; uncomment this for hand-debugging
                 let defaultUrl = store.icloudURL!.appendingPathComponent("rawdump")
                 DispatchQueue.global(qos: .utility).async {
                     if FileManager.default.fileExists(atPath: (self.url ?? defaultUrl).path) {
@@ -231,7 +230,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
                     } else {
                         try? buffer.write(to: (self.url ?? defaultUrl), options: .atomicWrite)
                     }
-                }
+                } */
                 
                 bytesRead += buffer.count
                 
@@ -276,18 +275,19 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
                         preparingTpxPacket.nPixels = byte
                         //print(String("nPixels: " + String(byte)))
                         if preparingTpxPacket.nPixels == 0 { // nullary packets are sent after frame's end; write out & reset here
-                            
+                            // TODO: Should this be asynchronous? How long does it take to add a FrameRecord to the database?
                             lastFrame = calibratedFrame(uncalibrated: preparingFrame, detectorID: config.selected, config: config)
                             
                             stateDesc = "Measuring: frame ID \(preparingTpxPacket.frameID) received"
-                            let totalled = lastFrame.reduce(0.0, {x, y in x + y.1})
+                            let totalKeV = lastFrame.reduce(0.0, {x, y in x + y.1})
                             let volume = 2 * 0.005 // cm^3
                             let density = 2.3212 // g/cm^3
                             let mass = volume * density // g
-                            lastValue = totalled / (mass * 6.24e12) // calculation following doi:10.1088/1742-6596/396/2/022023
+                            let totalGy = totalKeV / (mass * 6.24e12) // calculation following doi:10.1088/1742-6596/396/2/022023
                             let date = Date()
-                            try? store.write(Measurement(date: date, exposure: 0.2, deposition: totalled, dose: lastValue)) // TODO: Change exposure time to 1 / framerate
+                            try? store.write(Measurement(date: date, exposure: 0.2, deposition: totalKeV, dose: totalGy)) // TODO: Change exposure time to 1 / framerate
                             try? store.write(FrameRecord(date: date, detector: config.selected, frame: preparingFrame))
+                            lastValue = totalGy / 0.2 // TODO: Change to 1 / framerate (in hours^-1 possibly; the current view says Gy/hr)
                             parseStage = .head
                             preparingFrame = [:]
                             

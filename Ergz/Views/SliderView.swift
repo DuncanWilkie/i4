@@ -108,7 +108,7 @@ class SliderHandle: ObservableObject {
 class DoubleSlider: ObservableObject {
     
     //Slider Size
-    final let width: CGFloat = 450
+    final let width: CGFloat = 350 // TODO: make dynamic, read in from GeometryReader
     final let lineWidth: CGFloat = 8
     
     //Slider value range from valueStart to valueEnd
@@ -178,11 +178,12 @@ struct SliderPathBetweenView: View {
 
 struct SliderHandleView: View {
     @ObservedObject var handle: SliderHandle
+    @EnvironmentObject var store: Store
     
     var body: some View {
         ZStack {
             
-            Text("\(autoFormatter(Date(timeIntervalSinceReferenceDate: handle.currentValue),Date(timeIntervalSinceReferenceDate: handle.sliderValueStart),Date(timeIntervalSinceReferenceDate: handle.sliderValueEnd),DateFormatter()))"
+            Text("\(autoFormatter(Date(timeIntervalSinceReferenceDate: handle.currentValue), Date(timeIntervalSinceReferenceDate: handle.sliderValueStart), Date(timeIntervalSinceReferenceDate: handle.sliderValueEnd), store.fm))"
             )
                 .foregroundColor(Color.gray)
                 .position(x: handle.currentLocation.x, y: handle.currentLocation.y - 40)

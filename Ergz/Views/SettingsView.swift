@@ -16,7 +16,6 @@ struct SettingsView: View {
     @EnvironmentObject var detector: Detector
     @EnvironmentObject var config: Config
     
-    //    var archive_url = URL(fileURLWithPath: Store.db.path)
     @State var archive_name: String = ""
     @State var importing: Bool = false
     @State var exporting: Bool = false
@@ -24,12 +23,10 @@ struct SettingsView: View {
     @State var exportAg: Bool = false
     @State var selectedStart: Date = Date()
     @State var selectedEnd: Date = Date()
-    /*  @State var selected: String = "" { mark as published in config
-     willSet {
-     config.selected = newValue
-     }
-     } */
-    var body: some View {
+    @State var alertingBadConfig: Bool = false
+    @State var alertingConfirmClear: Bool = false
+
+    var body: some View { // TODO: Might be nice to break this out into smaller, encapsulated views so @Published updates don't cause so much havoc. It's made difficult by the fact almost all the complexity here is outside of views.
         let archive_url = store.url.appendingPathComponent("archive_staging")
         NavigationView {
             Form {
@@ -44,6 +41,9 @@ struct SettingsView: View {
                         Text("Import Calibration")
                     })
                 }
+                .alert("Failed to parse calibration file.", isPresented: $alertingBadConfig) { // TODO: check this works (after reworking this view)
+                    Button("Ok", role: .cancel) { }
+                }
                 
                 Section(header: Text("Export")) {
                     Button(action: { exportRaw.toggle() }, label: {
@@ -55,7 +55,7 @@ struct SettingsView: View {
                         
                         do {
                             let result: [FrameRecord] = try store.queue.read { db in
-                                try FrameRecord.fetchAll(db, sql:"SELECT * FROM FRAMERECORD WHERE DATE >= JULIANDAY('\(toSQL(selectedStart))') AND DATE <= JULIANDAY('\(toSQL(selectedEnd))')")
+                                try FrameRecord.fetchAll(db, sql:"SELECT * FROM FRAMERECORD WHERE DATE >= JULIANDAY('\(toSQL(selectedStart, store.fm))') AND DATE <= JULIANDAY('\(toSQL(selectedEnd, store.fm))')")
                             }
                             
                             if !FileManager.default.fileExists(atPath: archive_url.path) {
@@ -109,7 +109,7 @@ struct SettingsView: View {
                             }
                             
                             let result: [Measurement] = try store.queue.read { db in
-                                try Measurement.fetchAll(db, sql:"SELECT * FROM MEASUREMENT WHERE DATE >= JULIANDAY('\(toSQL(selectedStart))') AND DATE <= JULIANDAY('\(toSQL(selectedEnd))')")
+                                try Measurement.fetchAll(db, sql:"SELECT * FROM MEASUREMENT WHERE DATE >= JULIANDAY('\(toSQL(selectedStart, store.fm))') AND DATE <= JULIANDAY('\(toSQL(selectedEnd, store.fm))')")
                             }
                             
                             if FileManager.default.fileExists(atPath: archive_url.appendingPathComponent(archive_name).path) {
@@ -148,17 +148,30 @@ struct SettingsView: View {
                             })
                         }
                     }
+
                 }
                 
-                Section(header: Text("Sync")) { // TODO: Implement
-                    Text("iCloud Toggle")
-                    Text("Rsync?")
-                    Text("git?")
+                /* Section(header: Text("Sync")) { // TODO: Implement
+                    Toggle("iCloud Backup", isOn: $store.syncing)
+                }*/
+                
+                Section(header: Text("Clear")) {
+                    Button(action: { alertingConfirmClear = true }, label: {
+                        Text("Clear Local Data")
+                    })
+                }.alert("Permanently delete all measurements stored on this device?", isPresented: $alertingConfirmClear) {
+                    Button("Delete", role: .destructive) {
+                        store.clear()
+                    }
+                    
+                    Button("Cancel", role: .cancel) { }
                 }
                 
-            }.navigationTitle("Settings")
-            .padding()
+            }
             
+            
+            .navigationTitle("Settings")
+            .padding()
             .fileImporter(
                 isPresented: $importing,
                 allowedContentTypes: [.plainText],
@@ -187,7 +200,12 @@ struct SettingsView: View {
                     let cfile = selectedFiles.first { $0.lastPathComponent.contains("calib_c") }!
                     let tfile = selectedFiles.first { $0.lastPathComponent.contains("calib_t") }!
                     
-                    config.saveDetector(id: id, afile: afile, bfile: bfile, cfile: cfile, tfile: tfile)
+                    do {
+                        try config.saveDetector(id: id, afile: afile, bfile: bfile, cfile: cfile, tfile: tfile)
+                    } catch {
+                        alertingBadConfig = true
+                        return
+                    }
                 } else {
                     print("returned early at \(#line) in \(#file)")
                     return

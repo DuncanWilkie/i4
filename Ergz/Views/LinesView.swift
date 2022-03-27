@@ -32,9 +32,6 @@ struct LinesView: View {
                 let toPixels: (CGFloat, CGFloat) = (reader.size.width / CGFloat(data.width),
                                                     reader.size.height / CGFloat(data.height))
                 ZStack {
-                    //show loading symbol when query is running
-                    ProgressView().opacity(data.points.isEmpty ? 1.0 : 0.0)
-                        .progressViewStyle(CircularProgressViewStyle(tint: Color("primaryAccent"))).scaleEffect(1.5)
                     //draw the path line
                     Path { path in
                         if !data.points.isEmpty {
@@ -70,7 +67,7 @@ struct LinesView: View {
                             }
                     )
                     
-                    Path { path in
+                    Path { path in // This is hard to separate out because of pressLocation, but it should be done
                         path.move(to: CGPoint(x:pressLocation.x, y:0))
                         path.addLine(to: CGPoint(x: pressLocation.x, y: reader.size.height))
                     }.stroke(Color.white, lineWidth: 3).opacity(displayInfo ? 1.0 : 0.0)

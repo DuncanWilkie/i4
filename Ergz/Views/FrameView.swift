@@ -13,24 +13,25 @@ struct FrameView: View {
     var body: some View {
         VStack {
             
-            var img = (1...65536).map({ _ -> UInt32 in
-                let alpha = (Int.random(in: 0...15) == 0) ? Double.random(in: 0...1) : 0.0
-                let r = alpha * 0.247
-                let g = alpha * 0.808
-                let b = alpha * 0.922
-                return (UInt32(r * 255) << 24) | (UInt32(g * 255) << 16) | (UInt32(b * 255) << 8) | UInt32(alpha * 255)
-                
-            })
-            // TODO: Rework this to support new lastFrame semantics
-            /*let max = det.lastFrame.max { $0 < $1 } ?? 1 // consider implementing in Detector so this only updates on new frames
-            var img = (1...65536).map { det.lastFrame[$0] != nil }.map { exp -> UInt32 in
-             let alpha = exp / (max != 0 ? max : 1)
+            /*var img = (1...65536).map({ _ -> UInt32 in // test frame
+             let alpha = (Int.random(in: 0...15) == 0) ? Double.random(in: 0...1) : 0.0
              let r = alpha * 0.247
              let g = alpha * 0.808
              let b = alpha * 0.922
              return (UInt32(r * 255) << 24) | (UInt32(g * 255) << 16) | (UInt32(b * 255) << 8) | UInt32(alpha * 255)
-             } */
+             
+             }) */
             
+            let max = det.lastFrame.values.max() ?? 1
+            var img = (0...65535).map { det.lastFrame[PixelCoords(x: $0 % 256 + 1, y: $0 / 256 + 1)] ?? 0.0 }
+                .map { dose -> UInt32 in
+                    let alpha = dose / (max != 0 ? max : 1)
+                    let r = alpha * 0.247
+                    let g = alpha * 0.808
+                    let b = alpha * 0.922
+                    return (UInt32(r * 255) << 24) | (UInt32(g * 255) << 16) | (UInt32(b * 255) << 8) | UInt32(alpha * 255)
+                }
+            // This unsafe memory image hack is literal witchcraft; I'm just hoping old me read a really good SO post
             let cgImg = img.withUnsafeMutableBytes { (ptr) -> CGImage? in
                 let ctx = CGContext(
                     data: ptr.baseAddress,
@@ -49,7 +50,7 @@ struct FrameView: View {
                 let uiImg = UIImage(cgImage: cgImg!)
                 Image(uiImage: uiImg).resizable().scaledToFit()
                 
-            }            
+            }
         }
     }
 }

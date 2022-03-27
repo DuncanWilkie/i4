@@ -17,10 +17,11 @@ struct MeasurementSettingsView: View {
                     .toggleStyle(SwitchToggleStyle())
                 
                 HStack{
-                    // TODO: Implement framerate message sending in Detector or scrap this
+                    // TODO: Implement framerate message sending in Detector
+                    Text("Framerate (Hz):")
                     TextField(text: $detector.framerate, prompt: Text("Framerate (Hz)")) {
                         Text("Framerate (Hz)")
-                    }
+                    }.multilineTextAlignment(.trailing)
                     .keyboardType(.numberPad)
                     .onReceive(Just(detector.framerate)) { newValue in
                         let filtered = newValue.filter { "0123456789.".contains($0) }
@@ -32,6 +33,7 @@ struct MeasurementSettingsView: View {
             }
             
             .frame(width: 500, height: 200, alignment: .leading)
+            .padding()
         }
     }
 }

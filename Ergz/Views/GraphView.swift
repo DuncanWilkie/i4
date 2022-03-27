@@ -12,19 +12,33 @@ import SwiftUI
 struct GraphView: View {
     @EnvironmentObject var store: Store
     @EnvironmentObject var slider: DoubleSlider
-    var body: some View {
+    @ViewBuilder var body: some View {
         let startDate =
-            Date(timeIntervalSinceReferenceDate: slider.lowHandle.currentValue)
+        Date(timeIntervalSinceReferenceDate: slider.lowHandle.currentValue)
         let endDate =
-            Date(timeIntervalSinceReferenceDate: slider.highHandle.currentValue)
+        Date(timeIntervalSinceReferenceDate: slider.highHandle.currentValue)
         
-        let points = getPoints(store: store,
-                               startDate: startDate,
-                               endDate: endDate,
-                               density: 100,
-                               toUpdate: !slider.lowHandle.onDrag && !slider.highHandle.onDrag)
-        
-        LinesView(data: points, start: startDate, end: endDate) // TODO: Validate LinesView for correctness
+        GeometryReader { reader in
+            if slider.lowHandle.onDrag || slider.highHandle.onDrag {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: Color("primaryAccent")))
+                    .scaleEffect(1.5)
+                    .frame(width: reader.size.width, height: reader.size.height)
+            } else {
+                if store.hasData {
+                    let points = getPoints(store: store,
+                                           startDate: startDate,
+                                           endDate: endDate,
+                                           density: 100)
+                    LinesView(data: points, start: startDate, end: endDate).frame(width: reader.size.width, height: reader.size.height)
+                } else {
+                        Text("No Measurements Taken")
+                            .foregroundColor(Color.gray)
+                            .frame(width: reader.size.width, height: reader.size.height)
+                }
+            }
+        }
+        // TODO: Validate LinesView
         
         
     }

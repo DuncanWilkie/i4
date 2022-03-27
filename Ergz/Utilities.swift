@@ -11,8 +11,7 @@ import Combine
 
 
 // for converting Swift date to SQLite time-value
-func toSQL(_ date : Date) -> String { // TODO: Change to pass in formatter from Store
-    let formatter = DateFormatter()
+func toSQL(_ date : Date, _ formatter: DateFormatter) -> String {
     formatter.locale = Locale(identifier: "en_US_POSIX")
     formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
     formatter.timeZone = TimeZone(secondsFromGMT: 0) //SQLite does ISO-8601
@@ -21,8 +20,7 @@ func toSQL(_ date : Date) -> String { // TODO: Change to pass in formatter from 
 }
 
 //inverse of ^
-func fromSQL(_ string : String) -> Date { // TODO: Same as ^
-    let formatter = DateFormatter()
+func fromSQL(_ string : String, _ formatter: DateFormatter) -> Date {
     formatter.locale = Locale(identifier: "en_US_POSIX")
     formatter.dateFormat = "yyyy-MM-dd HH:mm:ss.SSS"
     formatter.timeZone = TimeZone(secondsFromGMT: 0) //SQLite does ISO-8601
@@ -51,12 +49,12 @@ func autoDoubleFormatter(value: Double, unit: String, width: Int) -> String {
     if String(value).count < width {
         return "\(value) \(unit)"
     }
-        
+    
     let prefixes = [-24: "y", -21: "z", -18: "a", -15: "f", -12: "p", -9: "n", -6: "µ", -3: "m", 0: "", 3: "k", 6: "M", 9: "G", 12: "T", 15: "P", 18: "E", 21: "Z", 24: "Y"]
-
+    
     do {
         let powten = Int(log10(value))
-        print(powten)
+        
         let pref_pow = powten - powten % 3
         guard let lett = prefixes[pref_pow] else { throw NSError() }
         return "\(String(value / pow(10, Double(pref_pow))).prefix(width)) \(lett)\(unit)"
@@ -106,82 +104,74 @@ struct PointReport {
     var width: Double
 }
 
-func getPoints(store: Store, startDate: Date, endDate: Date, density: Int, toUpdate: Bool) -> PointReport {
-    if toUpdate {
+func getPoints(store: Store, startDate: Date, endDate: Date, density: Int) -> PointReport {    
+    //some useful constants
+    let length = endDate.timeIntervalSince(startDate) //in seconds
+    let delta = length / Double(density)
+    
+    //creating list of partition information to be iterated over in query preparation
+    var partitions: [(Date, (Date, Date))] = [] //(center, (start, end))
+    for i in 1...density {
+        let center = startDate + (Double(i) + 0.5) * delta
+        let begin = startDate + Double(i) * delta
+        let end = startDate + Double(i + 1) * delta
         
-        //some useful constants
-        let length = endDate.timeIntervalSince(startDate) //in seconds
-        let delta = length / Double(density)
-        
-        //creating list of partition information to be iterated over in query preparation
-        var partitions: [(Date, (Date, Date))] = [] //(center, (start, end))
-        for i in 1...density {
-            let center = startDate + (Double(i) + 0.5) * delta
-            let begin = startDate + Double(i) * delta
-            let end = startDate + Double(i + 1) * delta
-            
-            partitions.append((center, (begin, end)))
-        }
-        
-        
-        
-        //query preparation
-        // TODO: Change to AVG(DOSE / EXPOSURE)...FROM MEASUREMENT...
-        var query: String = "SELECT AVG(DEPOSITION / EXPOSURE) AS AVG,  CASE "
-        for (date, range) in partitions {
-            query += "WHEN JULIANDAY(DATE) - JULIANDAY('\(toSQL(range.0))') >= 0 AND JULIANDAY('\(toSQL(range.1))') - JULIANDAY(DATE) >= 0 THEN '\(toSQL(date))' "
-        }
-        query += "END AS DATE_MID "
-        
-        query += """
-            FROM TESTRECORD WHERE
-                JULIANDAY(DATE) - JULIANDAY('\(toSQL(startDate))') >= 0
-                AND JULIANDAY('\(toSQL(endDate))') - JULIANDAY(DATE) >= 0
+        partitions.append((center, (begin, end)))
+    }
+    
+    
+    
+    //query preparation 
+    var query: String = "SELECT AVG(DOSE / EXPOSURE) AS AVG,  CASE "
+    for (date, range) in partitions {
+        query += "WHEN JULIANDAY(DATE) - JULIANDAY('\(toSQL(range.0, store.fm))') >= 0 AND JULIANDAY('\(toSQL(range.1, store.fm))') - JULIANDAY(DATE) >= 0 THEN '\(toSQL(date, store.fm))' "
+    }
+    query += "END AS DATE_MID "
+    
+    query += """
+            FROM MEASUREMENT WHERE
+                JULIANDAY(DATE) - JULIANDAY('\(toSQL(startDate, store.fm))') >= 0
+                AND JULIANDAY('\(toSQL(endDate, store.fm))') - JULIANDAY(DATE) >= 0
                 AND DATE_MID IS NOT NULL
             GROUP BY
                 DATE_MID;
             """
-        
-        //executing query
-        let dbQ = store.queue
-        var result: [Row] = []
-        do {
-            result = try dbQ.read { db in
-                try Row.fetchAll(db, sql:query) //can't be Measurement
-            }
-            
-        } catch {
-            print(error)
-        }
-        //setting parameters needed for autoranging
-        var max: Double = 0
-        var min: Double = 1e40
-        var sum: Double = 0
-        for i in result {
-            let c: Double = i["AVG"] //did it this way to avoid typecast hell
-            
-            sum += c
-            if c > max {
-                max = c
-            }
-            if c < min {
-                min = c
-            }
-        }
-
-        
-        var points: [(Date, Double)] = []
-        //building data array of the correct format
-        for i in result {
-            points.append((i["DATE_MID"], i["AVG"]))
+    
+    //executing query
+    let dbQ = store.queue
+    var result: [Row] = []
+    do {
+        result = try dbQ.read { db in
+            try Row.fetchAll(db, sql:query) //can't be Measurement
         }
         
-        return PointReport(points: points, max: max, min: min, height: max - min, width: length)
-        
-        
-    } else {
-        return PointReport(points: [], max: -1, min: 1, height: -1, width: -1)
+    } catch {
+        print(error)
     }
+    //setting parameters needed for autoranging
+    var max: Double = 0
+    var min: Double = 1e40
+    var sum: Double = 0
+    for i in result {
+        let c: Double = i["AVG"] //did it this way to avoid typecast hell
+        
+        sum += c
+        if c > max {
+            max = c
+        }
+        if c < min {
+            min = c
+        }
+    }
+    
+    
+    var points: [(Date, Double)] = []
+    //building data array of the correct format
+    for i in result {
+        points.append((i["DATE_MID"], i["AVG"]))
+    }
+    
+    return PointReport(points: points, max: max, min: min, height: max - min, width: length)
 }
 
 
@@ -193,176 +183,176 @@ func getPoints(store: Store, startDate: Date, endDate: Date, density: Int, toUpd
 //this also should be a function, not a class--once again, no control flow makes conditional evaluation when slider is released
 //hard.
 /* class CollectionWindow {
-    var startDate: Date
-    var endDate: Date
-    var density: Int //how many points to sample over
-    var data: [(Date, Double)] = []
-    var height: Double = 0
-    var width: Double = 0
-    var min: Double = 0
-    var max: Double = 0
-    
-    init(startDate: Date, endDate: Date, density: Int, toUpdate: Bool) {
-        self.startDate = startDate
-        self.endDate = endDate
-        self.density = density
-        if toUpdate {
-            //some useful constants
-            let length = endDate.timeIntervalSince(startDate) //in seconds
-            let delta = length / Double(density)
-            
-            //creating list of partition information to be iterated over in query preparation
-            var partitions: [(Date, (Date, Date))] = [] //(center, (start, end))
-            for i in 1...density {
-                let center = startDate + (Double(i) + 0.5) * delta
-                let begin = startDate + Double(i) * delta
-                let end = startDate + Double(i + 1) * delta
-                
-                partitions.append((center, (begin, end)))
-            }
-            
-            
-            
-            //query preparation
-            var query: String = "SELECT AVG(DEPOSITION / EXPOSURE) AS AVG,  CASE "
-            for (date, range) in partitions {
-                query += "WHEN JULIANDAY(DATE) - JULIANDAY('\(toSQL(range.0))') >= 0 AND JULIANDAY('\(toSQL(range.1))') - JULIANDAY(DATE) >= 0 THEN '\(toSQL(date))' "
-            }
-            query += "END AS DATE_MID "
-            
-            query += """
-                FROM MEASURMENT WHERE
-                    JULIANDAY(DATE) - JULIANDAY('\(toSQL(startDate))') >= 0
-                    AND JULIANDAY('\(toSQL(endDate))') - JULIANDAY(DATE) >= 0
-                    AND DATE_MID IS NOT NULL
-                GROUP BY
-                    DATE_MID;
-                """
-            
-            //executing query
-            let dbQ = Store.db.queue
-            var result: [Row] = []
-            do {
-                result = try dbQ.read { db in
-                    try Row.fetchAll(db, sql:query) //can't be Measurement
-                }
-                
-            } catch {
-                print(error)
-            }
-            //setting parameters needed for autoranging
-            var max: Double = 0
-            var min: Double = 1e40
-            for i in result {
-                let c: Double = i["AVG"] //did it this way to avoid typecast hell
-                if c > max {
-                    max = c
-                }
-                if c < min {
-                    min = c
-                }
-            }
-            self.max = max
-            self.min = min
-            self.height = Double(max - min)
-            self.width = endDate.timeIntervalSince(startDate)
-            
-            //building data array of the correct format
-            for i in result {
-                self.data.append((i["DATE_MID"], i["AVG"]))
-            }
-        }
-    }
-}
-
-//identical to above but draws from TEST instead. Should delete at some point; if we need this parallelism we ought to
-//just make a db parameter in CollectionWindow
-class TestWindow {
-    var startDate: Date
-    var endDate: Date
-    var density: Int //how many points to sample over
-    var data: [(Date, Double)] = []
-    var height: Double = 0
-    var width: Double = 0
-    var min: Double = 0
-    var max: Double = 0
-    var avg: Double = 0
-    
-    init(startDate: Date, endDate: Date, density: Int, toUpdate: Bool) {
-        self.startDate = startDate
-        self.endDate = endDate
-        self.density = density
-        if toUpdate {
-            
-            //some useful constants
-            let length = endDate.timeIntervalSince(startDate) //in seconds
-            let delta = length / Double(density)
-            
-            //creating list of partition information to be iterated over in query preparation
-            var partitions: [(Date, (Date, Date))] = [] //(center, (start, end))
-            for i in 1...density {
-                let center = startDate + (Double(i) + 0.5) * delta
-                let begin = startDate + Double(i) * delta
-                let end = startDate + Double(i + 1) * delta
-                
-                partitions.append((center, (begin, end)))
-            }
-            
-            
-            
-            //query preparation
-            var query: String = "SELECT AVG(DEPOSITION / EXPOSURE) AS AVG,  CASE "
-            for (date, range) in partitions {
-                query += "WHEN JULIANDAY(DATE) - JULIANDAY('\(toSQL(range.0))') >= 0 AND JULIANDAY('\(toSQL(range.1))') - JULIANDAY(DATE) >= 0 THEN '\(toSQL(date))' "
-            }
-            query += "END AS DATE_MID "
-            
-            query += """
-                FROM TESTRECORD WHERE
-                    JULIANDAY(DATE) - JULIANDAY('\(toSQL(startDate))') >= 0
-                    AND JULIANDAY('\(toSQL(endDate))') - JULIANDAY(DATE) >= 0
-                    AND DATE_MID IS NOT NULL
-                GROUP BY
-                    DATE_MID;
-                """
-            
-            //executing query
-            let dbQ = Store.db.queue
-            var result: [Row] = []
-            do {
-                result = try dbQ.read { db in
-                    try Row.fetchAll(db, sql:query) //can't be Measurement
-                }
-                
-            } catch {
-                print(error)
-            }
-            //setting parameters needed for autoranging
-            var max: Double = 0
-            var min: Double = 1e40
-            var sum: Double = 0
-            for i in result {
-                let c: Double = i["AVG"] //did it this way to avoid typecast hell
-                
-                sum += c
-                if c > max {
-                    max = c
-                }
-                if c < min {
-                    min = c
-                }
-            }
-            self.avg = sum / Double(density)
-            self.max = max
-            self.min = min
-            self.height = Double(max - min)
-            self.width = endDate.timeIntervalSince(startDate)
-            
-            //building data array of the correct format
-            for i in result {
-                self.data.append((i["DATE_MID"], i["AVG"]))
-            }
-        }
-    }
-}
-*/
+ var startDate: Date
+ var endDate: Date
+ var density: Int //how many points to sample over
+ var data: [(Date, Double)] = []
+ var height: Double = 0
+ var width: Double = 0
+ var min: Double = 0
+ var max: Double = 0
+ 
+ init(startDate: Date, endDate: Date, density: Int, toUpdate: Bool) {
+ self.startDate = startDate
+ self.endDate = endDate
+ self.density = density
+ if toUpdate {
+ //some useful constants
+ let length = endDate.timeIntervalSince(startDate) //in seconds
+ let delta = length / Double(density)
+ 
+ //creating list of partition information to be iterated over in query preparation
+ var partitions: [(Date, (Date, Date))] = [] //(center, (start, end))
+ for i in 1...density {
+ let center = startDate + (Double(i) + 0.5) * delta
+ let begin = startDate + Double(i) * delta
+ let end = startDate + Double(i + 1) * delta
+ 
+ partitions.append((center, (begin, end)))
+ }
+ 
+ 
+ 
+ //query preparation
+ var query: String = "SELECT AVG(DEPOSITION / EXPOSURE) AS AVG,  CASE "
+ for (date, range) in partitions {
+ query += "WHEN JULIANDAY(DATE) - JULIANDAY('\(toSQL(range.0))') >= 0 AND JULIANDAY('\(toSQL(range.1))') - JULIANDAY(DATE) >= 0 THEN '\(toSQL(date))' "
+ }
+ query += "END AS DATE_MID "
+ 
+ query += """
+ FROM MEASURMENT WHERE
+ JULIANDAY(DATE) - JULIANDAY('\(toSQL(startDate))') >= 0
+ AND JULIANDAY('\(toSQL(endDate))') - JULIANDAY(DATE) >= 0
+ AND DATE_MID IS NOT NULL
+ GROUP BY
+ DATE_MID;
+ """
+ 
+ //executing query
+ let dbQ = Store.db.queue
+ var result: [Row] = []
+ do {
+ result = try dbQ.read { db in
+ try Row.fetchAll(db, sql:query) //can't be Measurement
+ }
+ 
+ } catch {
+ print(error)
+ }
+ //setting parameters needed for autoranging
+ var max: Double = 0
+ var min: Double = 1e40
+ for i in result {
+ let c: Double = i["AVG"] //did it this way to avoid typecast hell
+ if c > max {
+ max = c
+ }
+ if c < min {
+ min = c
+ }
+ }
+ self.max = max
+ self.min = min
+ self.height = Double(max - min)
+ self.width = endDate.timeIntervalSince(startDate)
+ 
+ //building data array of the correct format
+ for i in result {
+ self.data.append((i["DATE_MID"], i["AVG"]))
+ }
+ }
+ }
+ }
+ 
+ //identical to above but draws from TEST instead. Should delete at some point; if we need this parallelism we ought to
+ //just make a db parameter in CollectionWindow
+ class TestWindow {
+ var startDate: Date
+ var endDate: Date
+ var density: Int //how many points to sample over
+ var data: [(Date, Double)] = []
+ var height: Double = 0
+ var width: Double = 0
+ var min: Double = 0
+ var max: Double = 0
+ var avg: Double = 0
+ 
+ init(startDate: Date, endDate: Date, density: Int, toUpdate: Bool) {
+ self.startDate = startDate
+ self.endDate = endDate
+ self.density = density
+ if toUpdate {
+ 
+ //some useful constants
+ let length = endDate.timeIntervalSince(startDate) //in seconds
+ let delta = length / Double(density)
+ 
+ //creating list of partition information to be iterated over in query preparation
+ var partitions: [(Date, (Date, Date))] = [] //(center, (start, end))
+ for i in 1...density {
+ let center = startDate + (Double(i) + 0.5) * delta
+ let begin = startDate + Double(i) * delta
+ let end = startDate + Double(i + 1) * delta
+ 
+ partitions.append((center, (begin, end)))
+ }
+ 
+ 
+ 
+ //query preparation
+ var query: String = "SELECT AVG(DEPOSITION / EXPOSURE) AS AVG,  CASE "
+ for (date, range) in partitions {
+ query += "WHEN JULIANDAY(DATE) - JULIANDAY('\(toSQL(range.0))') >= 0 AND JULIANDAY('\(toSQL(range.1))') - JULIANDAY(DATE) >= 0 THEN '\(toSQL(date))' "
+ }
+ query += "END AS DATE_MID "
+ 
+ query += """
+ FROM TESTRECORD WHERE
+ JULIANDAY(DATE) - JULIANDAY('\(toSQL(startDate))') >= 0
+ AND JULIANDAY('\(toSQL(endDate))') - JULIANDAY(DATE) >= 0
+ AND DATE_MID IS NOT NULL
+ GROUP BY
+ DATE_MID;
+ """
+ 
+ //executing query
+ let dbQ = Store.db.queue
+ var result: [Row] = []
+ do {
+ result = try dbQ.read { db in
+ try Row.fetchAll(db, sql:query) //can't be Measurement
+ }
+ 
+ } catch {
+ print(error)
+ }
+ //setting parameters needed for autoranging
+ var max: Double = 0
+ var min: Double = 1e40
+ var sum: Double = 0
+ for i in result {
+ let c: Double = i["AVG"] //did it this way to avoid typecast hell
+ 
+ sum += c
+ if c > max {
+ max = c
+ }
+ if c < min {
+ min = c
+ }
+ }
+ self.avg = sum / Double(density)
+ self.max = max
+ self.min = min
+ self.height = Double(max - min)
+ self.width = endDate.timeIntervalSince(startDate)
+ 
+ //building data array of the correct format
+ for i in result {
+ self.data.append((i["DATE_MID"], i["AVG"]))
+ }
+ }
+ }
+ }
+ */

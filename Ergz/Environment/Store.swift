@@ -8,21 +8,26 @@
 import Foundation
 import GRDB
 
-// TODO: Move all expensive-to-initialize items here, e.g. the DateFormatter() defined in detector
-class Store: ObservableObject { // Environment object for managing databases and remote syncing
+class Store: ObservableObject { // Environment object for managing databases and remote syncing information
     var queue: DatabaseQueue
     @Published var timeBounds: (Date, Date) = (Date(), Date(timeIntervalSinceReferenceDate: 0))
-    var testTimeBounds: (Date, Date) = (Date(), Date(timeIntervalSinceReferenceDate: 0))
+    // var testTimeBounds: (Date, Date) = (Date(), Date(timeIntervalSinceReferenceDate: 0))
     var url: URL
-    var nextRaw: Int = 0
+    // var nextRaw: Int = 0
     var icloudURL: URL?
+    var fm = DateFormatter()
+    var hasData: Bool = false
     init() {
         
-       
+        fm.locale = Locale(identifier: "en_US_POSIX")
+        fm.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
+        fm.timeZone = TimeZone(secondsFromGMT: 0)
+        
+        
         if let containerURL = FileManager.default.url(forUbiquityContainerIdentifier: nil) {
             let tryURL = containerURL.appendingPathComponent("Documents")
             do {
-                if (FileManager.default.fileExists(atPath: tryURL.path, isDirectory: nil) == false) {
+                if (!FileManager.default.fileExists(atPath: tryURL.path, isDirectory: nil)) {
                     try FileManager.default.createDirectory(at: tryURL, withIntermediateDirectories: true, attributes: nil)
                 }
                 icloudURL = tryURL
@@ -68,7 +73,17 @@ class Store: ObservableObject { // Environment object for managing databases and
                 }
             }
             
-            // TODO: Remove start
+           
+            do {
+                try dbQueue.read { db in
+                    hasData = try Measurement.fetchCount(db) > 0
+                }
+            } catch {
+                print(error)
+            }
+            
+            
+            /* // TODO: Remove start
             try dbQueue.write {  db in
                // try db.drop(table: "TESTRECORD")
                 try db.create(table: "TESTRECORD", ifNotExists: true) { t in
@@ -98,12 +113,12 @@ class Store: ObservableObject { // Environment object for managing databases and
                     try dbQueue.read { db in
                         let min = Testrecord.select(min(Column("date")), as: String.self)
                         let max = Testrecord.select(max(Column("date")), as: String.self)
-                        try testTimeBounds = (fromSQL(min.fetchOne(db)!), fromSQL(max.fetchOne(db)!))
+                        try testTimeBounds = (fromSQL(min.fetchOne(db)!, fm), fromSQL(max.fetchOne(db)!, fm))
                     }
                 } catch {
                     print("TESTRECORD not generated")
                     print(error)
-                } // TODO: Remove end
+                } // TODO: Remove end */
             
         } catch {
             print(error)
@@ -130,12 +145,29 @@ class Store: ObservableObject { // Environment object for managing databases and
         
         self.timeBounds = (earliest, latest)
         
+        hasData = true
     }
     
     func write(_ row: FrameRecord) throws {
         try queue.write { db in
             try row.insert(db)
         }
+        hasData = true
+    }
+    
+    func clear() {
+        do {
+            try queue.write { db in
+                try Measurement.deleteAll(db)
+                try FrameRecord.deleteAll(db)
+            }
+            
+            timeBounds = (Date(), Date(timeIntervalSinceReferenceDate: 0))
+        } catch {
+            print(error)
+        }
+        
+        hasData = false
     }
 }
 

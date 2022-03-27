@@ -18,8 +18,6 @@ struct Statistic: View {
         ZStack {
             VStack(alignment: .leading) {
                 Text(autoDoubleFormatter(value: value, unit: unit, width: 6))
-                    
-                
                 Text(label)
                     .font(.system(size: 14))
                     .foregroundColor(.gray)
@@ -39,7 +37,7 @@ struct Statistic: View {
             pressed.toggle()
         }
         .frame(width: 170, height: 100)
-    
+        
         
     }
 }

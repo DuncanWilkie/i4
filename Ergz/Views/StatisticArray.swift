@@ -33,36 +33,7 @@ func gatherStats(store: Store, startDate: Date, endDate: Date) -> (Double, Doubl
     } else {
         print("Error in gatherStats: query returned nil")
         return (0, 0, 0, 0)
-    }
-    
-    /*let query = "SELECT AVG(DEPOSITION / EXPOSURE) AS AVDEPRT, SUM(DEPOSITION) AS TOTDEP FROM TESTRECORD WHERE DATE >= '\(toSQL(startDate, store.fm))' AND DATE <= '\(toSQL(endDate, store.fm))'"
-    
-    var res: Row?
-    do {
-        res = try store.queue.read {db in
-            try Row.fetchOne(db, sql: query)
-        }
-    } catch {
-        print(error)
-    }
-    
-    if let i = res {
-        if i.allSatisfy({ !$0.1.isNull }) {
-            
-            
-            let avdep: Double = i["AVDEPRT"]
-            //let exp: Double = i["EXP"]
-            let totdep: Double = i["TOTDEP"]
-            
-            return (avdep, totdep, 0, 0)
-        } else {
-            return (0, 0, 0, 0)
-        }
-    } else {
-        print("Error in gatherStats: query returned nil")
-        return (0, 0, 0, 0)
-    } */
-    
+    }    
 }
 
 struct StatisticArray: View {

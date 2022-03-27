@@ -18,7 +18,7 @@ struct StatusView: View {
                 Text(detector.stateDesc)
                     .font(.system(.body, design: .monospaced))
                     .padding(.leading, 10)
-                Spacer()
+                Spacer() // does this do anything?
             }
         }
     }

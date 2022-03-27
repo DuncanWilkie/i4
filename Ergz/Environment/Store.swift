@@ -41,7 +41,7 @@ class Store: ObservableObject { // Environment object for managing databases and
         var dbQueue: DatabaseQueue
         do {
             let appSupportDir = try FileManager.default.url(for: .applicationSupportDirectory,
-                                                             in: .userDomainMask, appropriateFor: nil, create: true)
+                                                            in: .userDomainMask, appropriateFor: nil, create: true)
             let filePath = appSupportDir.path + "/database.sqlite"
             self.url = appSupportDir
             dbQueue = try DatabaseQueue(path: filePath)
@@ -73,7 +73,7 @@ class Store: ObservableObject { // Environment object for managing databases and
                 }
             }
             
-           
+            
             do {
                 try dbQueue.read { db in
                     hasData = try Measurement.fetchCount(db) > 0

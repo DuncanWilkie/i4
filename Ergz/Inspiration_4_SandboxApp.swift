@@ -25,7 +25,7 @@ import GRDB
 // arbitrarily in any other part of the code, and so when the same problem pops up in a couple unforseen places it requires a lot
 // of work and boilerplate to solve it without M-w, C-y.
 
-// That being said, SwiftUI is by far the best object framework I've had the pleasure of using.
+// That being said, SwiftUI is by far the best object framework I've had the misfortune of needing to use.
 // Writing views is a joy. Getting the data to them is a nightmare.
 
 @main

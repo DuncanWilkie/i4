@@ -22,13 +22,13 @@ struct MeasurementSettingsView: View {
                     TextField(text: $detector.framerate, prompt: Text("Framerate (Hz)")) {
                         Text("Framerate (Hz)")
                     }.multilineTextAlignment(.trailing)
-                    .keyboardType(.numberPad)
-                    .onReceive(Just(detector.framerate)) { newValue in
-                        let filtered = newValue.filter { "0123456789.".contains($0) }
-                        if filtered != newValue {
-                            detector.framerate = filtered
+                        .keyboardType(.numberPad)
+                        .onReceive(Just(detector.framerate)) { newValue in
+                            let filtered = newValue.filter { "0123456789.".contains($0) }
+                            if filtered != newValue {
+                                detector.framerate = filtered
+                            }
                         }
-                    }
                 }
             }
             .frame(width: 500, height: 200, alignment: .leading)

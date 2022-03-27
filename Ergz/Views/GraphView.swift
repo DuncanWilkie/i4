@@ -19,25 +19,27 @@ struct GraphView: View {
         Date(timeIntervalSinceReferenceDate: slider.highHandle.currentValue)
         
         GeometryReader { reader in
-            if slider.lowHandle.onDrag || slider.highHandle.onDrag {
-                ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle(tint: Color("primaryAccent")))
-                    .scaleEffect(1.5)
+            if !store.hasData {
+                Text("No Measurements Taken")
+                    .foregroundColor(Color.gray)
                     .frame(width: reader.size.width, height: reader.size.height)
             } else {
-                if store.hasData {
-                    let points = getPoints(store: store,
-                                           startDate: startDate,
-                                           endDate: endDate,
-                                           density: 100)
-                    LinesView(data: points, start: startDate, end: endDate).frame(width: reader.size.width, height: reader.size.height)
+                if slider.lowHandle.onDrag || slider.highHandle.onDrag {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: Color("primaryAccent")))
+                        .scaleEffect(1.5)
+                        .frame(width: reader.size.width, height: reader.size.height)
                 } else {
-                        Text("No Measurements Taken")
-                            .foregroundColor(Color.gray)
-                            .frame(width: reader.size.width, height: reader.size.height)
+                    if store.hasData {
+                        let points = getPoints(store: store, // somewhat heavy
+                                               startDate: startDate,
+                                               endDate: endDate,
+                                               density: 100)
+                        LinesView(data: points, start: startDate, end: endDate).frame(width: reader.size.width, height: reader.size.height)
+                    }
                 }
             }
-        } 
+        }
     }
 }
 

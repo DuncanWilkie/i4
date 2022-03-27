@@ -24,7 +24,7 @@ struct SettingsView: View {
     @State var selectedEnd: Date = Date()
     @State var alertingBadConfig: Bool = false
     @State var alertingConfirmClear: Bool = false
-
+    
     var body: some View { // TODO: Might be nice to break this out into smaller, encapsulated views so @Published updates don't cause so much havoc. It's made difficult by the fact almost all the complexity here is outside of views.
         let archive_url = store.url.appendingPathComponent("archive_staging")
         NavigationView {
@@ -147,12 +147,11 @@ struct SettingsView: View {
                             })
                         }
                     }
-
                 }
                 
                 /* Section(header: Text("Sync")) { // TODO: Implement
-                    Toggle("iCloud Backup", isOn: $store.syncing)
-                }*/
+                 Toggle("iCloud Backup", isOn: $store.syncing)
+                 }*/
                 
                 Section(header: Text("Clear")) {
                     Button(action: { alertingConfirmClear = true }, label: {
@@ -167,8 +166,6 @@ struct SettingsView: View {
                 }
                 
             }
-            
-            
             .navigationTitle("Settings")
             .padding()
             .fileImporter(
@@ -179,7 +176,6 @@ struct SettingsView: View {
                 let names = ["calib_a", "calib_b", "calib_c", "calib_t"]
                 let selectedFilesopt: [URL]? = try? result.get()
                 var selectedFiles: [URL]
-                // print(selectedFilesopt!)
                 if selectedFilesopt == nil { // linter doesn't like the guard-let syntax for this
                     print("returned early at \(#line) in \(#file)")
                     return
@@ -187,10 +183,7 @@ struct SettingsView: View {
                     selectedFiles = selectedFilesopt!
                 }
                 
-                //  selectedFiles.map{ print($0.lastPathComponent) }
                 let filenames = selectedFiles.map{ $0.lastPathComponent }
-                // print(filenames)
-                //print(filenames.allSatisfy({ names.contains(where: $0.contains) }))
                 if filenames.allSatisfy({ names.contains(where: $0.contains) }) && selectedFiles.count == 4 {
                     // all selected files have names containing one of the elements of "names"
                     let id = String(selectedFiles[0].lastPathComponent.prefix(3))
@@ -216,7 +209,6 @@ struct SettingsView: View {
                 }
                 exporting = false
                 archive_name = ""
-                //try? print(FileManager.default.contentsOfDirectory(atPath: archive_url.path))
             }
         }.navigationViewStyle(StackNavigationViewStyle())
     }

@@ -24,7 +24,6 @@ struct SliderValue {
 }
 
 class SliderHandle: ObservableObject {
-    
     //Slider Size
     let sliderWidth: CGFloat
     let sliderHeight: CGFloat
@@ -50,6 +49,7 @@ class SliderHandle: ObservableObject {
             }
         }
     }
+    
     @Published var currentLocation: CGPoint
     
     init(sliderWidth: CGFloat, sliderHeight: CGFloat, sliderValueStart: Double, sliderValueEnd: Double, startPercentage: SliderValue) {

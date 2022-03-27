@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct UsingSlider: View {
+struct UsingSlider: View { // GraphView and SliderView need to share a slider, but the slider has to have updated bounds based on the store's bounds.
     @EnvironmentObject var store: Store
     var body: some View {
         let slider = DoubleSlider(store.timeBounds)

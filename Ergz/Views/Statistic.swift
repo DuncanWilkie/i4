@@ -26,7 +26,6 @@ struct Statistic: View {
             }
             
             ZStack {
-                
                 Text(description ?? "").overlay(
                     Rectangle()
                         .fill(Color.gray)
@@ -35,10 +34,7 @@ struct Statistic: View {
             }
             .opacity(pressed ? 1 : 0)
             .frame(width: 300, height: 65)
-            .offset(x: 0, y: -55)
-            
-            
-            
+            .offset(x: 0, y: -55)            
         }.onTapGesture {
             pressed.toggle()
         }

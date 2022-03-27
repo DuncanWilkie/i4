@@ -48,9 +48,7 @@ struct FrameView: View {
             
             if let _ = cgImg {
                 let uiImg = UIImage(cgImage: cgImg!)
-                Image(uiImage: uiImg).resizable().scaledToFit()
-                
-            }
+                Image(uiImage: uiImg).resizable().scaledToFit()            }
         }
     }
 }

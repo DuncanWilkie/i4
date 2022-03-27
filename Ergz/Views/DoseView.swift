@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct DoseView: View {
+struct DoseView: View { // Localizing updates
     @EnvironmentObject var detector: Detector
     var body: some View {
         Text(String(format: "%.2f Gy/hr", detector.lastValue))

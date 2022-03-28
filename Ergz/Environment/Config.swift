@@ -60,7 +60,7 @@ class Config: ObservableObject { // Environment object for managing global user 
                 let cpath = paths.filter{$0.contains("calib_c")}
                 let tpath = paths.filter{$0.contains("calib_t")}
                 
-                assert(apath.count == 1 && bpath.count == 1 && cpath.count == 1 && tpath.count == 1)
+                guard (apath.count == 1 && bpath.count == 1 && cpath.count == 1 && tpath.count == 1) else { throw NSError() }
                 
                 let afile = try String(contentsOfFile: apath[0]).components(separatedBy: CharacterSet(charactersIn: " \n"))
                 let bfile = try String(contentsOfFile: bpath[0]).components(separatedBy: CharacterSet(charactersIn: " \n"))

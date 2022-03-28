@@ -15,7 +15,6 @@ struct ContentView: View {
             VStack {
                 DoseView()
                 UsingSlider()
-                StatisticArray()
             }
             .tabItem {
                 Label("Data", systemImage: "waveform.path.ecg")

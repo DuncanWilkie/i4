@@ -424,7 +424,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_ASSET_PATHS = "\"Ergz/Preview Content\"";
-				DEVELOPMENT_TEAM = L4ZJSHSGN8;
+				DEVELOPMENT_TEAM = FZ2GBZ6HA3;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Ergz/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -433,7 +433,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 4.0;
-				PRODUCT_BUNDLE_IDENTIFIER = space.chancellor.ergz;
+				PRODUCT_BUNDLE_IDENTIFIER = space.dnw.ergz;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "";
@@ -454,7 +454,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_ASSET_PATHS = "\"Ergz/Preview Content\"";
-				DEVELOPMENT_TEAM = L4ZJSHSGN8;
+				DEVELOPMENT_TEAM = FZ2GBZ6HA3;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = Ergz/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -463,7 +463,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 4.0;
-				PRODUCT_BUNDLE_IDENTIFIER = space.chancellor.ergz;
+				PRODUCT_BUNDLE_IDENTIFIER = space.dnw.ergz;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "";

@@ -14,6 +14,7 @@ struct UsingSlider: View { // GraphView and SliderView need to share a slider, b
         GraphView(slider: slider)
         Spacer().frame(height: 40)
         SliderView(slider: slider)
+        StatisticArray(slider: slider)
     }
 }
 

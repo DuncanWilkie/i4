@@ -18,11 +18,9 @@ class Store: ObservableObject { // Environment object for managing databases and
     var fm = DateFormatter()
     var hasData: Bool = false
     init() {
-        
         fm.locale = Locale(identifier: "en_US_POSIX")
         fm.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
         fm.timeZone = TimeZone(secondsFromGMT: 0)
-        
         
         if let containerURL = FileManager.default.url(forUbiquityContainerIdentifier: nil) {
             let tryURL = containerURL.appendingPathComponent("Documents")

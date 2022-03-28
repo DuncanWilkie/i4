@@ -137,6 +137,8 @@ func getPoints(store: Store, startDate: Date, endDate: Date, density: Int) -> Po
                 DATE_MID;
             """
     
+    // DATE_MID IS NOT NULL may cause problems. Instead of sh
+    print(query)
     //executing query
     let dbQ = store.queue
     var result: [Row] = []
@@ -154,7 +156,6 @@ func getPoints(store: Store, startDate: Date, endDate: Date, density: Int) -> Po
     var sum: Double = 0
     for i in result {
         let c: Double = i["AVG"] //did it this way to avoid typecast hell
-        
         sum += c
         if c > max {
             max = c

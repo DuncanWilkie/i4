@@ -86,7 +86,7 @@ func calibratedFrame(uncalibrated: Frame, detectorID: String, config: Config) ->
     var calibrated: CalibratedFrame = [:]
     for (coords, pixData) in uncalibrated {
         let tot = Double(Float16(bitPattern: pixData.tot))
-        let pixcal = config.detectors.first{$0.id == detectorID}!.cal[coords]!
+        let pixcal = config.detectors.first { $0.id == detectorID }!.cal[coords]!
         let b = tot + pixcal.a * pixcal.t - pixcal.b
         let sq = pow(pixcal.b - pixcal.a * pixcal.t - tot, 2)
         let ac = 4 * pixcal.a * (tot * pixcal.t - pixcal.b * pixcal.t - pixcal.c)
@@ -111,6 +111,8 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
     var url: URL?
     var measuring = false { // TODO: Make sure property wrapper not needed to set this from MeasurementSettingsView
         willSet {
+            print(isConnected)
+            print(session?.outputStream?.hasSpaceAvailable)
             stateDesc = newValue ? "Measuring: "  : "Connected: Ready to Measure"
             if isConnected && session?.outputStream?.hasSpaceAvailable ?? false {
                 let startMeas = UnsafeMutablePointer<UInt8>.allocate(capacity: 1)
@@ -188,6 +190,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
     }
     
     func stream(_ aStream: Stream, handle eventCode: Stream.Event) {
+        print(eventCode)
         switch eventCode {
         case Stream.Event.hasBytesAvailable:
             self.handlePacket(stream: aStream as! InputStream)
@@ -201,7 +204,9 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
     }
     
     private func handlePacket(stream: InputStream) {
+        print("bytes recieved")
         if isConnected {
+            print("bytes recieved")
             while stream.hasBytesAvailable {
                 let temp = UnsafeMutablePointer<UInt8>.allocate(capacity: 512)
                 

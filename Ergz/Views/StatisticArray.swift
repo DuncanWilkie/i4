@@ -38,7 +38,7 @@ func gatherStats(store: Store, startDate: Date, endDate: Date) -> (Double, Doubl
 
 struct StatisticArray: View {
     @EnvironmentObject var store: Store
-    @EnvironmentObject var slider: DoubleSlider
+    @ObservedObject var slider: DoubleSlider
     var body: some View {
         let stats = gatherStats(store: store,
                                 startDate: Date(timeIntervalSinceReferenceDate: slider.lowHandle.currentValue),
@@ -62,6 +62,6 @@ struct StatisticArray: View {
 
 struct StatisticArray_Previews: PreviewProvider {
     static var previews: some View {
-        StatisticArray().preferredColorScheme(.dark)
+        StatisticArray(slider: DoubleSlider((Date(),Date()))).preferredColorScheme(.dark)
     }
 }

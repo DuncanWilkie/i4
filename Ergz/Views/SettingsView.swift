@@ -193,7 +193,17 @@ struct SettingsView: View {
                     let tfile = selectedFiles.first { $0.lastPathComponent.contains("calib_t") }!
                     
                     do {
+                        guard afile.startAccessingSecurityScopedResource() else { throw NSError() }
+                        guard bfile.startAccessingSecurityScopedResource() else { throw NSError() }
+                        guard cfile.startAccessingSecurityScopedResource() else { throw NSError() }
+                        guard tfile.startAccessingSecurityScopedResource() else { throw NSError() }
+                        
                         try config.saveDetector(id: id, afile: afile, bfile: bfile, cfile: cfile, tfile: tfile)
+                        
+                        afile.stopAccessingSecurityScopedResource()
+                        bfile.stopAccessingSecurityScopedResource()
+                        cfile.stopAccessingSecurityScopedResource()
+                        tfile.stopAccessingSecurityScopedResource()
                     } catch {
                         alertingBadConfig = true
                         return

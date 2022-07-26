@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Foundation
+import Combine
 import UniformTypeIdentifiers
 import ZIPFoundation
 
@@ -25,10 +26,40 @@ struct SettingsView: View {
     @State var alertingBadConfig: Bool = false
     @State var alertingConfirmClear: Bool = false
     
+    
+    
     var body: some View { // TODO: Might be nice to break this out into smaller, encapsulated views so @Published updates don't cause so much havoc. It's made difficult by the fact almost all the complexity here is outside of views.
-        let archive_url = store.url.appendingPathComponent("archive_staging")
+        let archive_url = store.ourURL.appendingPathComponent("archive_staging")
         NavigationView {
             Form {
+                Section(header: Text("Display")) {
+                    Picker("Graph Type", selection: $config.plot) {
+                        Text("Line").tag("line")
+                        Text("Box-and-Whisker").tag("bw")
+                    }.pickerStyle(.segmented)
+                    Picker("Units", selection: $config.units) {
+                        Text("eV").tag("eV")
+                        Text("Gy").tag("Gy")
+                        Text("Sv").tag("Sv")
+                    }.pickerStyle(.segmented)
+                    HStack{
+                        Text("Equivalent Dose Conversion")
+                        TextField(text: $config.conversion_str, prompt: Text("Equivalent Dose Conversion")) {
+                            Text("Equivalent Dose Conversion")
+                        }.multilineTextAlignment(.trailing)
+                        .keyboardType(.decimalPad)
+                        .onReceive(Just(config.conversion_str)) { newValue in
+                            let filtered = newValue.filter { "0123456789.".contains($0) }
+                            if filtered != newValue {
+                                config.conversion_str = filtered
+                            }
+                        }
+                        .disabled(config.units != "Sv")
+                        .foregroundColor(config.units != "Sv" ? Color.gray : Color.white )
+                    }
+                    
+                }
+                
                 Section(header: Text("Detectors")) {
                     Picker("Active Detector", selection: $config.selected) {
                         ForEach(config.detectors, id: \.self.id) { detector in
@@ -54,7 +85,7 @@ struct SettingsView: View {
                         
                         do {
                             let result: [FrameRecord] = try store.queue.read { db in
-                                try FrameRecord.fetchAll(db, sql:"SELECT * FROM FRAMERECORD WHERE DATE >= JULIANDAY('\(toSQL(selectedStart, store.fm))') AND DATE <= JULIANDAY('\(toSQL(selectedEnd, store.fm))')")
+                                try FrameRecord.fetchAll(db, sql:"SELECT * FROM FRAMERECORD WHERE JULIANDAY('\(toSQL(selectedStart, store.fm))') - JULIANDAY(DATE) <= 0 AND JULIANDAY('\(toSQL(selectedEnd, store.fm))') - JULIANDAY(DATE) >= 0")
                             }
                             
                             if !FileManager.default.fileExists(atPath: archive_url.path) {
@@ -108,7 +139,7 @@ struct SettingsView: View {
                             }
                             
                             let result: [Measurement] = try store.queue.read { db in
-                                try Measurement.fetchAll(db, sql:"SELECT * FROM MEASUREMENT WHERE DATE >= JULIANDAY('\(toSQL(selectedStart, store.fm))') AND DATE <= JULIANDAY('\(toSQL(selectedEnd, store.fm))')")
+                                try Measurement.fetchAll(db, sql:"SELECT DATE, EXPOSURE, DEPOSITION, DOSE FROM MEASUREMENT WHERE JULIANDAY('\(toSQL(selectedStart, store.fm))') - JULIANDAY(DATE) <= 0 AND JULIANDAY('\(toSQL(selectedEnd, store.fm))') - JULIANDAY(DATE) >= 0")
                             }
                             
                             if FileManager.default.fileExists(atPath: archive_url.appendingPathComponent(archive_name).path) {
@@ -120,12 +151,12 @@ struct SettingsView: View {
                                 return
                             }
                             
-                            var content = ",Date,Exposure (s), Deposition (keV), Absorbed Dose (Gy, in water)\n"
+                            var content = ",Date,Exposure (s), Deposition (eV), Absorbed Dose (Gy, in water)\n"
                             for meas in result {
                                 content += "\(meas.date),\(meas.exposure),\(meas.deposition),\(meas.dose)\n"
                                 
                             }
-                            
+                          
                             let data = content.data(using: .utf8)!
                             
                             try? archive.addEntry(with: "\(selectedStart);\(selectedEnd)", type: .file, uncompressedSize: Int64(data.count),
@@ -149,9 +180,6 @@ struct SettingsView: View {
                     }
                 }
                 
-                /* Section(header: Text("Sync")) { // TODO: Implement
-                 Toggle("iCloud Backup", isOn: $store.syncing)
-                 }*/
                 
                 Section(header: Text("Clear")) {
                     Button(action: { alertingConfirmClear = true }, label: {

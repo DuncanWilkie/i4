@@ -87,12 +87,17 @@ func calibratedFrame(uncalibrated: Frame, detectorID: String, config: Config) ->
     for (coords, pixData) in uncalibrated {
         let tot = Double(Float16(bitPattern: pixData.tot))
         let pixcal = config.detectors.first { $0.id == detectorID }!.cal[coords]!
-        let b = tot + pixcal.a * pixcal.t - pixcal.b
-        let sq = pow(pixcal.b - pixcal.a * pixcal.t - tot, 2)
-        let ac = 4 * pixcal.a * (tot * pixcal.t - pixcal.b * pixcal.t - pixcal.c)
-        let energy = (b + sqrt(sq - ac)) / (2 * pixcal.a) // calculation following doi:10.1088/1742-6596/396/2/022023
-        // notably, the inversion of the TOT(Energy) formula given is not unique; I've taken the positive branch here.
-        calibrated[coords] = Double(energy)
+        if pixcal.a == 0 {
+            let energy =  pixcal.c / (pixcal.b - tot) + pixcal.t
+            calibrated[coords] = Double(energy)
+        } else {
+            let b = tot + pixcal.a * pixcal.t - pixcal.b
+            let sq = pow(pixcal.b - pixcal.a * pixcal.t - tot, 2)
+            let ac = pixcal.a * (tot * pixcal.t - pixcal.b * pixcal.t - pixcal.c)
+            let energy = (b + sqrt(sq - 4 * ac)) / (2 * pixcal.a) // calculation following doi:10.1088/1742-6596/396/2/022023
+            // notably, the inversion of the TOT(Energy) formula given is not unique; I've taken the positive branch here.
+            calibrated[coords] = Double(energy)
+        }
     }
     
     return calibrated
@@ -112,8 +117,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
     var measuring = false { // TODO: Make sure property wrapper not needed to set this from MeasurementSettingsView
         willSet {
             print(isConnected)
-            print(session?.outputStream?.hasSpaceAvailable)
-            stateDesc = newValue ? "Measuring: "  : "Connected: Ready to Measure"
+            stateDesc = newValue ? "Measuring: "  : (isConnected ? "Connected: ready to measure" : "Disconnected.")
             if isConnected && session?.outputStream?.hasSpaceAvailable ?? false {
                 let startMeas = UnsafeMutablePointer<UInt8>.allocate(capacity: 1)
                 startMeas[0] = newValue ? 0xcb : 0xbc
@@ -132,11 +136,22 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
     var pixelsRead = 0
     var lastFrameID = 0
     
+    
     //state consumed by views
     @Published var isConnected: Bool = false
     @Published var lastFrame: CalibratedFrame = [:]
     @Published var lastValue: Double = 0.0
-    @Published var framerate: String = "" // TODO: Make settable
+    var exposure: Double {
+        guard let result = Double(exposure_str) else {
+            print("Exposure string \(exposure_str) not convertible to Double")
+            return 0.2
+        }
+        
+        return result
+    }
+    
+    @Published var exposure_str: String = "0.2"
+    
     @Published var stateDesc = "Initializing..."
     var bytesRead = 0
     
@@ -161,6 +176,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
     
     @objc private func onConnection(_ notification: Notification) {
         let changed = notification.userInfo?["EAAccessoryKey"] as! EAAccessory
+        print(changed.name)
         
         if  changed.name == "iPix" {
             self.session = EASession(accessory: changed, forProtocol: "space.chancellor.test")
@@ -204,9 +220,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
     }
     
     private func handlePacket(stream: InputStream) {
-        print("bytes recieved")
         if isConnected {
-            print("bytes recieved")
             while stream.hasBytesAvailable {
                 let temp = UnsafeMutablePointer<UInt8>.allocate(capacity: 512)
                 
@@ -260,10 +274,9 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
                             let density = 2.3212 // g/cm^3
                             let mass = volume * density // g
                             let totalGy = totalKeV / (mass * 6.24e12) // calculation following doi:10.1088/1742-6596/396/2/022023
-                            let date = Date()
-                            try? store.write(Measurement(date: date, exposure: 0.2, deposition: totalKeV, dose: totalGy)) // TODO: Change exposure time to 1 / framerate
-                            try? store.write(FrameRecord(date: date, detector: config.selected, frame: preparingFrame))
-                            lastValue = totalGy / 0.2 // TODO: Change to 1 / framerate (in hours^-1 possibly; the current view says Gy/hr)
+                            try? store.write(Measurement(date: Date(), exposure: exposure, deposition: totalKeV * 1000, dose: totalGy))
+                            try? store.write(FrameRecord(date: Date(), detector: config.selected, exposure: exposure, frame: preparingFrame))
+                            lastValue = (config.units == "eV" ? totalKeV * 1000 : (config.units == "Gy" ? totalGy : totalGy * (Double(config.conversion_str) ?? 1))) / exposure
                             parseStage = .head
                             preparingFrame = [:]
                             

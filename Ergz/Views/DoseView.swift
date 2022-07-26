@@ -9,8 +9,9 @@ import SwiftUI
 
 struct DoseView: View { // Localizing updates
     @EnvironmentObject var detector: Detector
+    @EnvironmentObject var config: Config
     var body: some View {
-        Text(String(format: "%.2f Gy/hr", detector.lastValue))
+        Text(autoDoubleFormatter(value: detector.lastValue, unit: config.units + "/s", width: 6) )
             .font(.system(.title))
     }
 }

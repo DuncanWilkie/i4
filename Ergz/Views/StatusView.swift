@@ -14,12 +14,10 @@ struct StatusView: View {
             RoundedRectangle(cornerRadius: 5)
                 .foregroundColor(Color(white: 0.13))
                 .frame(height: 24)
-            HStack {
+            
                 Text(detector.stateDesc)
                     .font(.system(.body, design: .monospaced))
                     .padding(.leading, 10)
-                Spacer() // does this do anything?
-            }
         }
     }
 }

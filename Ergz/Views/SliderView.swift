@@ -126,9 +126,9 @@ class DoubleSlider: ObservableObject {
     final var anyCancellableHigh: AnyCancellable?
     final var anyCancellableLow: AnyCancellable?
     
-    init(_ bounds: (Date, Date)) {
-        valueStart = bounds.0.timeIntervalSinceReferenceDate
-        valueEnd = bounds.1.timeIntervalSinceReferenceDate
+    init(store: Store) {
+        valueStart = store.timeBounds.0.timeIntervalSinceReferenceDate
+        valueEnd = store.timeBounds.1.timeIntervalSinceReferenceDate
         
         highHandle = SliderHandle(sliderWidth: width,
                                   sliderHeight: lineWidth,
@@ -172,18 +172,19 @@ struct SliderPathBetweenView: View {
             path.move(to: slider.lowHandle.currentLocation)
             path.addLine(to: slider.highHandle.currentLocation)
         }
-        .stroke(Color("primaryAccent"), lineWidth: slider.lineWidth)
+        .stroke(slider.valueEnd < slider.valueStart ? Color.gray : Color("primaryAccent"), lineWidth: slider.lineWidth)
     }
 }
 
 struct SliderHandleView: View {
     @ObservedObject var handle: SliderHandle
     @EnvironmentObject var store: Store
+    @EnvironmentObject var fm: Formatters
     
     var body: some View {
         ZStack {
             
-            Text("\(autoFormatter(Date(timeIntervalSinceReferenceDate: handle.currentValue), Date(timeIntervalSinceReferenceDate: handle.sliderValueStart), Date(timeIntervalSinceReferenceDate: handle.sliderValueEnd), store.fm))"
+            Text("\(compressDate(Date(timeIntervalSinceReferenceDate: handle.currentValue), Date(timeIntervalSinceReferenceDate: handle.sliderValueStart), Date(timeIntervalSinceReferenceDate: handle.sliderValueEnd), fm.fm))"
             )
             .foregroundColor(Color.gray)
             .position(x: handle.currentLocation.x, y: handle.currentLocation.y - 40)

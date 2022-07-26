@@ -26,6 +26,13 @@ class Config: ObservableObject { // Environment object for managing global user 
     var base_url: URL
     @Published var detectors: [DetectorData] = []
     @Published var selected: String = ""
+    @Published var plot: String = "line"
+    @Published var units: String = "eV"
+    @Published var conversion_str: String = "1.2" {
+        willSet {
+            conversion_str = newValue.filter{ $0.isNumber }
+        }
+    }
     init() {
         // read contents of directories that store detector metadata, and build a list of corresponding structs
         let appSupportDir = try! FileManager.default.url(for: .applicationSupportDirectory,
@@ -49,7 +56,7 @@ class Config: ObservableObject { // Environment object for managing global user 
             
             let directoryContents = try FileManager.default.contentsOfDirectory(at: base_url,
                                                                                 includingPropertiesForKeys: nil)
-            print(directoryContents)
+        
             for url in directoryContents {
                 let id = url.lastPathComponent
                 
@@ -67,15 +74,14 @@ class Config: ObservableObject { // Environment object for managing global user 
                 let cfile = try String(contentsOfFile: cpath[0]).components(separatedBy: CharacterSet(charactersIn: " \n"))
                 let tfile = try String(contentsOfFile: tpath[0]).components(separatedBy: CharacterSet(charactersIn: " \n"))
                 
-                // print(afile) use something like this to test calibration file parsing
                 var calibration: FrameCalibration = [:]
-                for iy in 1...256 { // TODO: check the axes on the calibration file match what I've assumed
-                    for ix in 1...256 {
+                for iy in 0...255 { // TODO: check the axes on the calibration file match what I've assumed
+                    for ix in 0...255 {
                         
-                        let pixcal = PixelCalibration(a: try Double(afile[256*(iy - 1) + ix - 1]) ?? { throw NSError() }(),
-                                                      b: try Double(bfile[256*(iy - 1) + ix - 1]) ?? { throw NSError() }(),
-                                                      c: try Double(cfile[256*(iy - 1) + ix - 1]) ?? { throw NSError() }(),
-                                                      t: try Double(tfile[256*(iy - 1) + ix - 1]) ?? { throw NSError() }())
+                        let pixcal = PixelCalibration(a: try Double(afile[256 * iy + ix]) ?? { throw NSError() }(),
+                                                      b: try Double(bfile[256 * iy + ix]) ?? { throw NSError() }(),
+                                                      c: try Double(cfile[256 * iy + ix]) ?? { throw NSError() }(),
+                                                      t: try Double(tfile[256 * iy + ix]) ?? { throw NSError() }())
                         
                         calibration[PixelCoords(x: ix, y: iy)] = pixcal
                     }

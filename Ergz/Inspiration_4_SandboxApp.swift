@@ -21,23 +21,25 @@ import GRDB
 // and provides far better guarantees and maintainability. You can just /start writing/ a functional program without any planning
 // and you won't need to undo half a dozen major design decisions once your project has a slightly unanticipated inter-module dependencies.
 
-// I attribute this to object-oriented code being /non-commutative;/ one can't simply use the functionaliy one wrote in one place
+// I attribute this to object-oriented code being /non-commutative;/ one can't simply use the functionaltiy one wrote in one place
 // arbitrarily in any other part of the code, and so when the same problem pops up in a couple unforseen places it requires a lot
 // of work and boilerplate to solve it without M-w, C-y.
 
 // That being said, SwiftUI is by far the best object framework I've had the misfortune of needing to use.
 // Writing views is a joy. Getting the data to them is a nightmare.
-
+let test = false
 @main
 struct Ergz: App {
-    @StateObject var config: Config = Config()
-    @StateObject var store: Store = Store()
+    @StateObject var env: Environment = Environment()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(config)
-                .environmentObject(store)
-                .environmentObject(Detector(store: store, config: config)) // I'm assuming this view doesn't get invalidated, so this stays constant. If it does get invalidated, self.fetalPosition(); self.cry()
+                .environmentObject(env.config)
+                .environmentObject(env.store)
+                .environmentObject(env.detector)
+                .environmentObject(env.formatters)
+                .environmentObject(env.iCloud)
                 .preferredColorScheme(/*@START_MENU_TOKEN@*/.dark/*@END_MENU_TOKEN@*/)
             
         }
@@ -48,6 +50,7 @@ struct Ergz: App {
 struct FrameRecord: Codable, FetchableRecord, PersistableRecord {
     var date: Date
     var detector: String
+    var exposure: Double
     var frame: Frame
     
     func csv() -> (String, String) {
@@ -67,3 +70,4 @@ struct Measurement: Codable, FetchableRecord, PersistableRecord { //used to writ
     var deposition: Double
     var dose: Double
 }
+

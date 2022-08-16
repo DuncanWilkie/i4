@@ -74,6 +74,9 @@ class Store: ObservableObject { // Environment object for managing databases and
     var queue: DatabaseQueue
     @Published var timeBounds: (Date, Date) = (Date(), Date(timeIntervalSinceReferenceDate: 0))
     var ourURL: URL
+    var logfile: URL {
+        ourURL.appendingPathComponent("log.txt")
+    }
     
     @Published var dataCount: Int = 0
     init(fm: DateFormatter) {
@@ -141,6 +144,7 @@ class Store: ObservableObject { // Environment object for managing databases and
         self.timeBounds = (earliest, latest)
         
         dataCount += 1
+        print(dataCount)
     }
     
     func write(_ row: FrameRecord) throws {
@@ -161,7 +165,7 @@ class Store: ObservableObject { // Environment object for managing databases and
             print(error)
         }
         
-        dataCount += 1
+        dataCount = 0
     }
     
     func stats(units: String, conversion: String, startDate: Date, endDate: Date) -> (Double, Double, Double, Double) {

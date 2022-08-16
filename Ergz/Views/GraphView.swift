@@ -28,40 +28,45 @@ struct GraphView: View {
         let endDate = Date(timeIntervalSinceReferenceDate: slider.highHandle.currentValue)
         
         
-        if store.dataCount == 0 {
-            Text("No Measurements Taken")
-                .foregroundColor(Color.gray)
+        GeometryReader { reader in
+            let width = reader.size.width.isNaN ? 0 : reader.size.width
+            let height = reader.size.height.isNaN ? 0 : reader.size.height
             
-        } else {
-            if slider.lowHandle.onDrag || slider.highHandle.onDrag {
-                ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle(tint: Color("primaryAccent")))
-                    .scaleEffect(1.5)
+            if store.dataCount == 0 {
+                Text("No Measurements Taken")
+                    .foregroundColor(Color.gray)
+                    .frame(width: width, height: height)
+                
             } else {
-                let points = store.points(units: config.units,
-                                          conversion: config.conversion_str,
-                                          startDate: startDate,
-                                          endDate: endDate,
-                                          count: 120)
-                
-                
-                VStack(alignment: .leading) {
-                    let formatter = DateFormatter()
-                    Text("\(autoDoubleFormatter(value: nearestDatum.3, unit: config.units + "/s", width: 6)) \(compressDate(nearestDatum.0, startDate, endDate, formatter))")
-                        .foregroundColor(Color.white)
-                        .frame(alignment: .leading)
-                        .opacity(displayInfo ? 1.0 : 0.0)
-                    GeometryReader { reader in
+                if slider.lowHandle.onDrag || slider.highHandle.onDrag {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: Color("primaryAccent")))
+                        .scaleEffect(1.5)
+                        .frame(width: width, height: height)
+                } else {
+                    let points = store.points(units: config.units,
+                                              conversion: config.conversion_str,
+                                              startDate: startDate,
+                                              endDate: endDate,
+                                              count: 120)
+                    
+                    
+                    VStack(alignment: .leading) {
+                        let formatter = DateFormatter()
+                        Text("\(autoDoubleFormatter(value: nearestDatum.3, unit: config.units + "/s", width: 6)) \(compressDate(nearestDatum.0, startDate, endDate, formatter))")
+                            .foregroundColor(Color.white)
+                            .frame(alignment: .leading)
+                            .opacity(displayInfo ? 1.0 : 0.0)
                         ZStack {
-                            let toPixelsLine: (CGFloat, CGFloat) = (reader.size.width / CGFloat(points.width),
-                                                                    reader.size.height / CGFloat(points.greatestMedian))
-                            LinesView(data: points, start: startDate, end: endDate, toPixels: toPixelsLine, height: reader.size.height)
+                            let toPixelsLine: (CGFloat, CGFloat) = (points.width == 0 ? 0 : width / CGFloat(points.width),
+                                                                    points.height == 0 ? 0 : height / CGFloat(points.greatestMedian))
+                            LinesView(data: points, start: startDate, end: endDate, toPixels: toPixelsLine, height: height)
                                 .opacity(config.plot == "line" ? 1.0 : 0)
                                 .gesture(DragGesture(minimumDistance: 0, coordinateSpace: .local)
                                     .onChanged { value in
                                         self.displayInfo = true
                                         self.pressLocation = value.location
-                                        let toPixels: CGFloat = reader.size.width / CGFloat(points.width)
+                                        let toPixels: CGFloat = points.width == 0 ? 0 : width / CGFloat(points.width)
                                         for i in points.stats {
                                             let checkDist = abs(CGFloat(i.0.timeIntervalSinceReferenceDate - startDate.timeIntervalSinceReferenceDate) * toPixels - pressLocation.x)
                                             let storedDist = abs(CGFloat(nearestDatum.0.timeIntervalSinceReferenceDate - startDate.timeIntervalSinceReferenceDate) * toPixels - pressLocation.x)
@@ -75,17 +80,17 @@ struct GraphView: View {
                                         self.pressLocation = .zero
                                     })
                             
-                            let toPixelsBox = (reader.size.width / CGFloat(points.width),
-                                               reader.size.height / CGFloat(points.height))
+                            let toPixelsBox = (points.width == 0 ? 0 : width / CGFloat(points.width),
+                                               points.height == 0 ? 0 : height / CGFloat(points.height))
                             let spacing = 1.0
-                            BoxWhiskerView(data: points, height: reader.size.height, width: reader.size.width,
+                            BoxWhiskerView(data: points, height: height, width: width,
                                            toPixels: toPixelsBox, spacing: spacing)
                             .opacity(config.plot == "bw" ? 1.0 : 0)
                             .gesture(DragGesture(minimumDistance: 0, coordinateSpace: .local)
                                 .onChanged { value in
                                     self.displayInfo = true
                                     self.pressLocation = value.location
-                                    let toPixels: CGFloat = reader.size.width / CGFloat(points.width)
+                                    let toPixels: CGFloat = points.width == 0 ? 0 : width / CGFloat(points.width)
                                     for i in points.stats {
                                         let checkDist = abs(CGFloat(i.0.timeIntervalSinceReferenceDate - startDate.timeIntervalSinceReferenceDate) * toPixels - pressLocation.x)
                                         let storedDist = abs(CGFloat(nearestDatum.0.timeIntervalSinceReferenceDate - startDate.timeIntervalSinceReferenceDate) * toPixels - pressLocation.x)
@@ -105,7 +110,7 @@ struct GraphView: View {
                             
                             Path { path in // This is hard to separate out because of pressLocation, but it should be done
                                 path.move(to: CGPoint(x: pressLocation.x, y:0))
-                                path.addLine(to: CGPoint(x: pressLocation.x, y: reader.size.height))
+                                path.addLine(to: CGPoint(x: pressLocation.x, y: height))
                             }.stroke(Color.white, lineWidth: 3).opacity(displayInfo ? 1.0 : 0.0)
                         }
                     }

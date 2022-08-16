@@ -21,6 +21,7 @@ struct SettingsView: View {
     @State var exporting: Bool = false
     @State var exportRaw: Bool = false
     @State var exportAg: Bool = false
+    @State var exportLog: Bool = false
     @State var selectedStart: Date = Date()
     @State var selectedEnd: Date = Date()
     @State var alertingBadConfig: Bool = false
@@ -76,6 +77,41 @@ struct SettingsView: View {
                 }
                 
                 Section(header: Text("Export")) {
+                    Button(action: { exportLog.toggle() }, label: {
+                        Text("Binary Log")
+                    }).sheet(isPresented: $exportLog, onDismiss: {
+                        if archive_name == "" {
+                            archive_name = "export.zip"
+                        }
+                        
+                        do {
+                            if !FileManager.default.fileExists(atPath: archive_url.path) {
+                                try FileManager.default.createDirectory(at: archive_url, withIntermediateDirectories: false, attributes: nil)
+                            }
+                            
+                            if FileManager.default.fileExists(atPath: archive_url.appendingPathComponent(archive_name).path) {
+                                try FileManager.default.removeItem(at: archive_url.appendingPathComponent(archive_name))
+                            }
+                            
+                            guard let archive = Archive(url: archive_url.appendingPathComponent(archive_name), accessMode: .create) else {
+                                print("archive creation failed at \(#line) in \(#file)")
+                                return
+                            }
+                            
+                            try? archive.addEntry(with: store.logfile.lastPathComponent, relativeTo: store.logfile.deletingLastPathComponent())
+                        } catch {
+                            print(error)
+                        }
+                        
+                        exporting = true
+                    }) {
+                        Form {
+                            TextField("File Name", text: $archive_name)
+                            Button(action: { exportLog.toggle() }, label: {
+                                Text("Done")
+                            })
+                        }
+                    }
                     Button(action: { exportRaw.toggle() }, label: {
                         Text("Raw Frames")
                     }).sheet(isPresented: $exportRaw, onDismiss: {
@@ -151,12 +187,12 @@ struct SettingsView: View {
                                 return
                             }
                             
-                            var content = ",Date,Exposure (s), Deposition (eV), Absorbed Dose (Gy, in water)\n"
+                            var content = "Date,Exposure (s),Deposition (eV),Absorbed Dose (Gy in water)\n"
                             for meas in result {
                                 content += "\(meas.date),\(meas.exposure),\(meas.deposition),\(meas.dose)\n"
                                 
                             }
-                          
+                            
                             let data = content.data(using: .utf8)!
                             
                             try? archive.addEntry(with: "\(selectedStart);\(selectedEnd)", type: .file, uncompressedSize: Int64(data.count),

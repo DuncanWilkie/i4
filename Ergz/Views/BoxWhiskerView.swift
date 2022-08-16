@@ -16,6 +16,7 @@ struct BoxWhiskerView: View {
     var spacing: CGFloat
     var body: some View {
         let barRadius = data.stats.count == 0 || width / CGFloat(data.stats.count) / 2 < spacing ? 0 : width / CGFloat(data.stats.count) / 2 - spacing
+
         ZStack {
             Path { path in // Drawing the whiskers
                 if !data.stats.isEmpty {
@@ -42,9 +43,9 @@ struct BoxWhiskerView: View {
                 let q1: Double = tup.2
                 let med: Double = tup.3
                 let q3: Double = tup.4
-                let iqr = q3 - q1 < 0 ? 0 : CGFloat(q3 - q1)
+
                 RoundedRectangle(cornerRadius: 2.0)
-                    .frame(width: 2 * barRadius, height: iqr * toPixels.1)
+                    .frame(width: 2 * barRadius, height: CGFloat(q3 - q1) * toPixels.1)
                     .position(x: CGFloat(date.timeIntervalSinceReferenceDate - data.stats[0].0.timeIntervalSinceReferenceDate) * toPixels.0,
                               y: height - CGFloat((q3 + q1) / 2 - data.min) * toPixels.1)
                     
@@ -58,7 +59,7 @@ struct BoxWhiskerView: View {
                                                         data.stats[0].0.timeIntervalSinceReferenceDate) * toPixels.0 + barRadius,
                                              y: height - CGFloat(med - data.min) * toPixels.1))
                     
-                }.stroke(Color.gray)
+                 }.stroke(Color.gray)
                 
             }
         }

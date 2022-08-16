@@ -46,16 +46,6 @@ struct Pixel {
 typealias Frame = [PixelCoords : PixelData] // associate (x,y) for x,y <- 1...256 with pixel data.
 typealias CalibratedFrame = [PixelCoords : Double]
 
-enum parseStage {
-    case head
-    case frameID
-    case packetID
-    case mode
-    case nPixels
-    case checksumMatched
-    case pixelData
-}
-
 // translation of the wonderfully-named convert_packet() function from ADVACAM.
 // colShiftNum is always 4 in their code, and for now we only need ToA/ToT tpx_mode.
 func decodePixel(data: Data) -> Pixel { // byte-for-byte identical to Advacam's Python script on several inputs.
@@ -104,38 +94,209 @@ func calibratedFrame(uncalibrated: Frame, detectorID: String, config: Config) ->
     
 }
 
+
+
+enum ParseState {
+    case len
+    case type
+    case bytes
+}
+
+class StateDelegate: NSObject, StreamDelegate {
+    var session: EASession
+    var detector: Detector
+    var msg_len = 0
+    var msg_type = 0
+    var bytes_read = 0
+    var parse_state: ParseState = .len
+    var current_packet: [UInt8] = []
+    init(changed: EAAccessory, detector: Detector) {
+        self.session = EASession(accessory: changed, forProtocol: "space.chancellor.state")!
+        self.detector = detector
+        
+        super.init()
+        
+        let input =  session.inputStream! // If we get here and these are nil, there's something really wrong with the detector.
+        let output = session.outputStream!
+        
+        
+        input.delegate = self
+        input.schedule(in: .current, forMode: .common)
+        input.open()
+        
+        output.delegate = self
+        output.schedule(in: .current, forMode: .common)
+        output.open()
+    }
+    
+    func handle_message() {
+        switch(msg_type) {
+        case 0xaa:
+            detector.saveFrame()
+        case 0xab:
+            let temperature: Int = Int((UInt16(current_packet[0]) << 8) & UInt16(current_packet[1]))
+            // TODO: integrate into UI and send commands
+        case 0xac:
+            let str = String(decoding: Data(current_packet), as: UTF8.self)
+            print(str) // TODO: integrate status messages into app
+        case 0xae:
+            let errors = ["Frame measurement failed", "Powerup failed", "Powerup TPX3 reset recv data error",
+                          "Powerup TPX3 init resets error", "Powerup TPX3 init chip ID error", "Powerup TPX3 init DACs error",
+                          "Powerup TPX3 init PixCfg error", "Powerup TPX3 init matrix error", "Invalid preset parameter"]
+            print("MiniPIX Error: \(errors[Int(current_packet[0])])")
+            // TODO: integrate error messages into app
+            
+        default:
+            break
+            // handle the single-byte state messages received from accessory
+        }
+    }
+    
+    
+    func stream(_ aStream: Stream, handle eventCode: Stream.Event) {
+        switch(eventCode) {
+        case Stream.Event.hasBytesAvailable:
+            let stream = aStream as! InputStream
+            while stream.hasBytesAvailable {
+                let bytes = UnsafeMutablePointer<UInt8>.allocate(capacity: 1)
+                let from_stream_cnt = stream.read(bytes, maxLength: 1)
+                bytes.deallocate()
+                if from_stream_cnt == 1 {
+                    let byte = bytes[0]
+                    switch(parse_state) {
+                    case .len:
+                        msg_len = Int(byte)
+                        parse_state = .type
+                        
+                    case .type:
+                        msg_type = Int(byte)
+                        parse_state = .bytes
+                        
+                    case .bytes:
+                        bytes_read += 1
+                        current_packet.append(byte)
+                        if bytes_read == msg_len {
+                            self.handle_message()
+                            parse_state = .len
+                            msg_len = 0
+                            msg_type = 0
+                            current_packet = []
+                        }
+                    }
+                }
+            }
+            
+        case Stream.Event.endEncountered:
+            break
+        case Stream.Event.errorOccurred:
+            print("Stream Error \(eventCode) Occured: line \(#line) in \(#file)")
+        default:
+            print("Unrecognized stream event")
+        }
+    }
+    
+    func write(_ byte: UInt8) {
+        let buf = UnsafeMutablePointer<UInt8>.allocate(capacity: 1)
+        buf[0] = byte
+        session.outputStream!.write(buf, maxLength: 1)
+    }
+    
+}
+
+class FrameDelegate: NSObject, StreamDelegate {
+    var session: EASession
+    var detector: Detector
+    var preparing_pixel: Data = Data(capacity: 6)
+    var bytes_read = 0
+    var pixels_read = 0
+    var pixel_count = 0
+    init(changed: EAAccessory, detector: Detector) {
+        self.session = EASession(accessory: changed, forProtocol: "space.chancellor.frame")!
+        self.detector = detector
+        
+        super.init()
+        
+        let input =  session.inputStream! // If we get here and these are nil, there's something really wrong with the detector.
+        let output = session.outputStream!
+        
+        
+        input.delegate = self
+        input.schedule(in: .current, forMode: .common)
+        input.open()
+        
+        output.delegate = self
+        output.schedule(in: .current, forMode: .common)
+        output.open()
+    }
+    
+    func stream(_ aStream: Stream, handle eventCode: Stream.Event) {
+        switch(eventCode) {
+        case Stream.Event.hasBytesAvailable:
+            let stream = aStream as! InputStream
+            while stream.hasBytesAvailable {
+                let temp = UnsafeMutablePointer<UInt8>.allocate(capacity: 1)
+                let bytes_from_stream = stream.read(temp, maxLength: 1)
+                let byte = temp[0]
+                temp.deallocate()
+                
+                if bytes_from_stream == 1 {
+                    if pixel_count == 0 {
+                        pixel_count = Int(byte)
+                    } else {
+                        preparing_pixel[bytes_read] = byte
+                        bytes_read += 1
+                        
+                        if bytes_read == 6 {
+                            let pixel = decodePixel(data: preparing_pixel)
+                            detector.preparingFrame[pixel.coords] = pixel.data
+                            bytes_read = 0
+                            pixels_read += 1
+                        }
+                        
+                        if pixels_read == pixel_count {
+                            pixel_count = 0
+                            pixels_read = 0
+                        }
+                        
+                        
+                    }
+                    
+                }
+            }
+            
+        case Stream.Event.endEncountered:
+            break
+        case Stream.Event.errorOccurred:
+            print("Stream Error \(eventCode) Occured: line \(#line) in \(#file)")
+        default:
+            print("Unrecognized stream event")
+        }
+    }
+}
+
+
 class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporate detector ID from stream in stateDesc when connected but not measuring
     var store: Store
     var config: Config
-    var session: EASession?
+    var state_session: StateDelegate?
+    var frame_session: FrameDelegate?
     var manager = EAAccessoryManager.shared()
     var nc = NotificationCenter.default
     // Validation so far: the parsing as appearing below produces identical results to ADVACAM's Python script
     // that serves the same purpose.
     
-    var url: URL?
     var measuring = false { // TODO: Make sure property wrapper not needed to set this from MeasurementSettingsView
         willSet {
-            print(isConnected)
             stateDesc = newValue ? "Measuring: "  : (isConnected ? "Connected: ready to measure" : "Disconnected.")
-            if isConnected && session?.outputStream?.hasSpaceAvailable ?? false {
-                let startMeas = UnsafeMutablePointer<UInt8>.allocate(capacity: 1)
-                startMeas[0] = newValue ? 0xcb : 0xbc
-                session?.outputStream?.write(startMeas, maxLength: 1)
+            if isConnected && state_session?.session.outputStream?.hasSpaceAvailable ?? false {
+                let startMeas: UInt8 = newValue ? 0xcb : 0xbc
+                state_session?.write(startMeas)
             }
         }
     }
     
-    var lastMetadata: [Dictionary<String, AnyObject>] = []
     var preparingFrame: Frame = [:]
-    var badPackets: Int = 0
-    var frameCount: Int = 0
-    var preparingTpxPacket = TpxPacket(frameID: 0, packetID: 0, mode: 0, nPixels: 0, checksumMatched: 0, pixelData: [])
-    var parseStage: parseStage = .head
-    var subIndex = 0
-    var pixelsRead = 0
     var lastFrameID = 0
-    
     
     //state consumed by views
     @Published var isConnected: Bool = false
@@ -153,16 +314,13 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
     @Published var exposure_str: String = "0.2"
     
     @Published var stateDesc = "Initializing..."
-    var bytesRead = 0
-    
     
     
     init(store: Store, config: Config) {
         self.store = store
         self.config = config
         
-        
-        super.init() //NSObject init
+        super.init()
         
         //register self as observer and enter connection and disconnection methods on receiving associated messages
         nc.addObserver(self, selector: #selector(self.onConnection(_:)), name: .EAAccessoryDidConnect, object: nil)
@@ -179,159 +337,42 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
         print(changed.name)
         
         if  changed.name == "iPix" {
-            self.session = EASession(accessory: changed, forProtocol: "space.chancellor.test")
+            self.state_session = StateDelegate(changed: changed, detector: self)
+            self.frame_session = FrameDelegate(changed: changed, detector: self)
             self.isConnected = true
             self.stateDesc = "Connected: ready to measure"
         } else {
             return
         }
         
-        guard let _ = self.session else { //EASession returns nil if error
-            print("unsupported protocol/communication warning: line \(#line) in \(#file)")
-            return
-        }
-        
-        
-        let input =  self.session!.inputStream! // If we get here and these are nil, there's something really wrong with the detector.
-        let output = self.session!.outputStream!
-        input.delegate = self
-        input.schedule(in: .current, forMode: .common)
-        input.open()
-        
-        output.delegate = self
-        output.schedule(in: .current, forMode: .common)
-        output.open()
-        
-        
     }
     
-    func stream(_ aStream: Stream, handle eventCode: Stream.Event) {
-        print(eventCode)
-        switch eventCode {
-        case Stream.Event.hasBytesAvailable:
-            self.handlePacket(stream: aStream as! InputStream)
-        case Stream.Event.endEncountered:
-            break
-        case Stream.Event.errorOccurred:
-            print("Stream Error \(eventCode) Occured: line \(#line) in \(#file)")
-        default:
-            print("Unrecognized stream event")
-        }
+    func saveFrame() {
+        lastFrame = calibratedFrame(uncalibrated: preparingFrame, detectorID: config.selected, config: config)
+        let totalKeV = lastFrame.reduce(0.0, {x, y in x + y.1})
+        let volume = 2 * 0.005 // cm^3
+        let density = 2.3212 // g/cm^3
+        let mass = volume * density // g
+        let totalGy = totalKeV / (mass * 6.24e12) // calculation following doi:10.1088/1742-6596/396/2/022023
+        try? store.write(Measurement(date: Date(), exposure: exposure, deposition: totalKeV * 1000, dose: totalGy))
+        try? store.write(FrameRecord(date: Date(), detector: config.selected, exposure: exposure, frame: preparingFrame)) // TODO: change to lastFrame?
+        lastValue = (config.units == "eV" ? totalKeV * 1000 : (config.units == "Gy" ? totalGy : totalGy * (Double(config.conversion_str) ?? 1))) / exposure
+        preparingFrame = [:]
     }
     
-    private func handlePacket(stream: InputStream) {
-        if isConnected {
-            while stream.hasBytesAvailable {
-                let temp = UnsafeMutablePointer<UInt8>.allocate(capacity: 512)
-                
-                stream.read(temp, maxLength: 512)
-                
-                let buffer = Data(buffer: UnsafeMutableBufferPointer<UInt8>(start: temp, count: 512))
-                temp.deallocate()
-                
-                bytesRead += buffer.count
-                
-                for byte in buffer { // parse the stream for TPX packets & frames, writing to all expecting sources
-                    switch (parseStage) {
-                    case .head:
-                        if byte == 0x14 {
-                            parseStage = .frameID
-                        }
-                        
-                    case .frameID:
-                        if subIndex == 0 {
-                            preparingTpxPacket.frameID = UInt16(byte)
-                            subIndex += 1
-                        } else if subIndex == 1 {
-                            preparingTpxPacket.frameID |= UInt16(byte) << 8
-                            subIndex = 0
-                            parseStage = .packetID
-                        }
-                        
-                    case .packetID:
-                        if subIndex == 0 {
-                            preparingTpxPacket.packetID = UInt16(byte)
-                            subIndex += 1
-                        } else if subIndex == 1 {
-                            preparingTpxPacket.packetID |= UInt16(byte) << 8
-                            subIndex = 0
-                            parseStage = .mode
-                        }
-                        
-                    case .mode:
-                        preparingTpxPacket.mode = byte
-                        parseStage = .nPixels
-                        
-                    case .nPixels:
-                        preparingTpxPacket.nPixels = byte
-                        if preparingTpxPacket.nPixels == 0 { // nullary packets are sent after frame's end; write out & reset here
-                            // TODO: Should this be asynchronous? How long does it take to add a FrameRecord to the database?
-                            lastFrame = calibratedFrame(uncalibrated: preparingFrame, detectorID: config.selected, config: config)
-                            
-                            stateDesc = "Measuring: frame ID \(preparingTpxPacket.frameID) received"
-                            let totalKeV = lastFrame.reduce(0.0, {x, y in x + y.1})
-                            let volume = 2 * 0.005 // cm^3
-                            let density = 2.3212 // g/cm^3
-                            let mass = volume * density // g
-                            let totalGy = totalKeV / (mass * 6.24e12) // calculation following doi:10.1088/1742-6596/396/2/022023
-                            try? store.write(Measurement(date: Date(), exposure: exposure, deposition: totalKeV * 1000, dose: totalGy))
-                            try? store.write(FrameRecord(date: Date(), detector: config.selected, exposure: exposure, frame: preparingFrame))
-                            lastValue = (config.units == "eV" ? totalKeV * 1000 : (config.units == "Gy" ? totalGy : totalGy * (Double(config.conversion_str) ?? 1))) / exposure
-                            parseStage = .head
-                            preparingFrame = [:]
-                            
-                        } else {
-                            parseStage = .checksumMatched
-                        }
-                        
-                    case .checksumMatched:
-                        preparingTpxPacket.checksumMatched = byte
-                        parseStage = .pixelData
-                        
-                    case .pixelData:
-                        //print(pixelsRead)
-                        if subIndex == 0 {
-                            preparingTpxPacket.pixelData.append([byte])
-                            subIndex += 1
-                        } else if subIndex < 5 {
-                            preparingTpxPacket.pixelData[preparingTpxPacket.pixelData.count - 1].append(byte)
-                            subIndex += 1
-                        }
-                        
-                        else {
-                            preparingTpxPacket.pixelData[preparingTpxPacket.pixelData.count - 1].append(byte)
-                            let pixel = Data(preparingTpxPacket.pixelData[preparingTpxPacket.pixelData.count - 1])
-                            //for i in pixel {print(String(format: "%02X", i))}
-                            let decoded = decodePixel(data: pixel)
-                            //print("decoded: \(decoded)")
-                            pixelsRead += 1
-                            subIndex = 0
-                            preparingFrame[decoded.coords] = decoded.data
-                            //print(decoded.0, decoded.1)
-                            if pixelsRead == preparingTpxPacket.nPixels { // reset packet parsing
-                                pixelsRead = 0
-                                parseStage = .head
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+    
     
     @objc private func onDisconnection(_ notification: Notification) {
         let changed = notification.userInfo?["EAAccessoryKey"] as! EAAccessory
         if changed.name == "iPix" {
             if self.isConnected {
+                self.state_session?.session.outputStream?.close()
+                self.state_session?.session.inputStream?.close()
                 
-                self.session = nil
-                
-                self.session?.inputStream?.close()
-                
+                self.frame_session?.session.outputStream?.close()
+                self.frame_session?.session.inputStream?.close()
                 self.isConnected = false
                 self.stateDesc = "Disconnected."
-                self.bytesRead = 0
-                
             }
         }
     }

@@ -44,7 +44,7 @@ struct Pixel {
 }
 
 typealias Frame = [PixelCoords : PixelData] // associate (x,y) for x,y <- 1...256 with pixel data.
-typealias CalibratedFrame = [PixelCoords : Double]
+typealias CalibratedFrame = [PixelCoords : Double] // codomain is keV
 
 // translation of the wonderfully-named convert_packet() function from ADVACAM.
 // colShiftNum is always 4 in their code, and for now we only need ToA/ToT tpx_mode.
@@ -123,6 +123,7 @@ class StateDelegate: NSObject, StreamDelegate {
         input.delegate = self
         input.schedule(in: .current, forMode: .common)
         input.open()
+        print(session.protocolString)
         
         output.delegate = self
         output.schedule(in: .current, forMode: .common)
@@ -132,13 +133,15 @@ class StateDelegate: NSObject, StreamDelegate {
     func handle_message() {
         switch(msg_type) {
         case 0xaa:
+            print("Received frame packet.")
             detector.saveFrame()
         case 0xab:
+            print("Received temperature packet.")
             let temperature: Int = Int((UInt16(current_packet[0]) << 8) & UInt16(current_packet[1]))
             // TODO: integrate into UI and send commands
         case 0xac:
             let str = String(decoding: Data(current_packet), as: UTF8.self)
-            print(str) // TODO: integrate status messages into app
+            print("Received status message\(str)") // TODO: integrate status messages into app
         case 0xae:
             let errors = ["Frame measurement failed", "Powerup failed", "Powerup TPX3 reset recv data error",
                           "Powerup TPX3 init resets error", "Powerup TPX3 init chip ID error", "Powerup TPX3 init DACs error",
@@ -147,6 +150,7 @@ class StateDelegate: NSObject, StreamDelegate {
             // TODO: integrate error messages into app
             
         default:
+            print("Unrecognized detector message type \(msg_type)")
             break
             // handle the single-byte state messages received from accessory
         }
@@ -160,9 +164,9 @@ class StateDelegate: NSObject, StreamDelegate {
             while stream.hasBytesAvailable {
                 let bytes = UnsafeMutablePointer<UInt8>.allocate(capacity: 1)
                 let from_stream_cnt = stream.read(bytes, maxLength: 1)
+                let byte = bytes[0]
                 bytes.deallocate()
                 if from_stream_cnt == 1 {
-                    let byte = bytes[0]
                     switch(parse_state) {
                     case .len:
                         msg_len = Int(byte)
@@ -173,8 +177,8 @@ class StateDelegate: NSObject, StreamDelegate {
                         parse_state = .bytes
                         
                     case .bytes:
-                        bytes_read += 1
                         current_packet.append(byte)
+                        bytes_read += 1
                         if bytes_read == msg_len {
                             self.handle_message()
                             parse_state = .len
@@ -189,18 +193,21 @@ class StateDelegate: NSObject, StreamDelegate {
         case Stream.Event.endEncountered:
             break
         case Stream.Event.errorOccurred:
-            print("Stream Error \(eventCode) Occured: line \(#line) in \(#file)")
+            print("State stream error \(eventCode)")
         default:
-            print("Unrecognized stream event")
+            print("Unrecognized state stream event \(eventCode)")
         }
     }
     
     func write(_ byte: UInt8) {
         let buf = UnsafeMutablePointer<UInt8>.allocate(capacity: 1)
         buf[0] = byte
-        session.outputStream!.write(buf, maxLength: 1)
+        let code = session.outputStream!.write(buf, maxLength: 1)
+        guard code == 1 else {
+            print("Write to StreamDelegate output failed with return code \(code)")
+            return
+        }
     }
-    
 }
 
 class FrameDelegate: NSObject, StreamDelegate {
@@ -257,19 +264,16 @@ class FrameDelegate: NSObject, StreamDelegate {
                             pixel_count = 0
                             pixels_read = 0
                         }
-                        
-                        
                     }
-                    
                 }
             }
             
         case Stream.Event.endEncountered:
             break
         case Stream.Event.errorOccurred:
-            print("Stream Error \(eventCode) Occured: line \(#line) in \(#file)")
+            print("Frame stream error \(eventCode)")
         default:
-            print("Unrecognized stream event")
+            print("Unrecognized frame stream event \(eventCode)")
         }
     }
 }
@@ -312,8 +316,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
     }
     
     @Published var exposure_str: String = "0.2"
-    
-    @Published var stateDesc = "Initializing..."
+    @Published var stateDesc = "Disconnected."
     
     
     init(store: Store, config: Config) {
@@ -325,10 +328,8 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
         //register self as observer and enter connection and disconnection methods on receiving associated messages
         nc.addObserver(self, selector: #selector(self.onConnection(_:)), name: .EAAccessoryDidConnect, object: nil)
         nc.addObserver(self, selector: #selector(self.onDisconnection(_:)), name: .EAAccessoryDidDisconnect, object: nil)
-        //actually receive EA.* messages thru NC in this Store
+        //actually receive EA.* messages through NC here
         self.manager.registerForLocalNotifications()
-        
-        self.stateDesc = "Disconnected."
     }
     
     
@@ -336,7 +337,7 @@ class Detector: NSObject, StreamDelegate, ObservableObject { // TODO: Incorporat
         let changed = notification.userInfo?["EAAccessoryKey"] as! EAAccessory
         print(changed.name)
         
-        if  changed.name == "iPix" {
+        if changed.name == "iPix" {
             self.state_session = StateDelegate(changed: changed, detector: self)
             self.frame_session = FrameDelegate(changed: changed, detector: self)
             self.isConnected = true

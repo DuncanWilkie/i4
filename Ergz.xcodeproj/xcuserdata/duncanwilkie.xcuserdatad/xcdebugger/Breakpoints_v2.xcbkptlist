@@ -19,33 +19,18 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "1B64971B-7DAA-46A7-B477-41450979B6BF"
+            uuid = "3B9CC3D1-7699-4E7E-A754-D2C975E1795E"
             shouldBeEnabled = "No"
+            nameForDebugger = "bruh"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Ergz/Environment/Detector.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "289"
-            endingLineNumber = "289"
-            landmarkName = "measuring"
-            landmarkType = "24">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "1935C33D-D528-4E67-9B95-549416684CAD"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Ergz/Inspiration_4_SandboxApp.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "16"
-            endingLineNumber = "16"
-            landmarkName = "unknown"
-            landmarkType = "0">
+            startingLineNumber = "247"
+            endingLineNumber = "247"
+            landmarkName = "stream(_:handle:)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
